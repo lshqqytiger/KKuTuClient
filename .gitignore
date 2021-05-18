@@ -1,0 +1,5 @@
+.vs
+bin/Setup.exe
+bin/setup.nsi
+bin/Debug
+obj/Debug

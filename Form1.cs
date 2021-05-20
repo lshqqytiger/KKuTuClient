@@ -4,11 +4,8 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Windows.Forms;
 using WebSocketSharp;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
 using System.IO;
@@ -30,6 +27,8 @@ namespace BFKKuTuClient
         public Boolean wsConnected = false;
         public int joinedRoom = 0;
         public string promptResult = String.Empty;
+        public int[] EXP = new int[361];
+        public int MAX_LEVEL = 360;
         Login LoginForm = new Login();
         Prompt PromptForm = new Prompt("");
 
@@ -50,7 +49,7 @@ namespace BFKKuTuClient
             public String _playTime;
             public String _okg;
             public Boolean _cF;
-            public Boolean _gaming = false;
+            public Boolean gaming = false;
             public JObject box;
         }
 
@@ -83,6 +82,26 @@ namespace BFKKuTuClient
             roomListBox.Parent = this;
             roomBox.Parent = this;
             roomBox.Visible = false;
+
+            EXP[0] = getRequiredScore(1);
+            for (int i = 2; i < MAX_LEVEL; i++)
+            {
+                EXP[i] = EXP[i - 2] + getRequiredScore(i);
+            }
+            EXP[MAX_LEVEL - 1] = int.MaxValue;
+            EXP[MAX_LEVEL] = int.MaxValue;
+        }
+
+        private dynamic get(string url) {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "GET";
+
+            var webResponse = request.GetResponse();
+            var webStream = webResponse.GetResponseStream();
+            var responseReader = new StreamReader(webStream);
+            var response = responseReader.ReadToEnd();
+            responseReader.Close();
+            return response;
         }
 
         private void connect_Click(object sender, EventArgs e)
@@ -102,15 +121,7 @@ namespace BFKKuTuClient
                 return;
             }
 
-            String url = "https://bfkkutu.kr/client/session?id=" + id + "&pw=" + pw;
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            request.Method = "GET";
-
-            var webResponse = request.GetResponse();
-            var webStream = webResponse.GetResponseStream();
-            var responseReader = new StreamReader(webStream);
-            var sessionId = responseReader.ReadToEnd();
-            responseReader.Close();
+            sessionId = get("https://bfkkutu.kr/client/session?id=" + id + "&pw=" + pw);
             using (ws = new WebSocket("wss://ws.bfkkutu.kr/g10000/"+sessionId))
             {
                 ws.OnOpen += (se, ev) =>
@@ -187,6 +198,21 @@ namespace BFKKuTuClient
                         //res["notice"] ? notice(L["error_" + a.code]) : Chat(res["profile"].ToString(), res["value"].ToString(), res["from"].ToString(), res["timestamp"].ToString());
                     }
                     break;
+                case "reloadData":
+                    data.id = res["id"].ToString();
+                    data.admin = res["admin"].ToString() == "true";
+                    data.careful = res["careful"].ToString();
+                    data.nickname = res["nickname"].ToString();
+                    data.exordial = res["exordial"].ToString();
+                    if(!data.gaming) data.users = JObject.Parse(res["users"].ToString());
+                    data.rooms = JObject.Parse(res["rooms"].ToString());
+                    data.friends = JObject.Parse(res["friends"].ToString());
+                    data._playTime = res["playTime"].ToString();
+                    data._okg = res["okg"].ToString();
+                    data._cF = res["chatFreeze"].ToString() == "true";
+                    data.box = JObject.Parse(res["box"].ToString());
+                    updateUI();
+                    break;
                 default:
                     break;
             }
@@ -195,6 +221,69 @@ namespace BFKKuTuClient
         private void updateUI() {
             updateUserList();
             updateRoomList();
+            renderMoremi();
+            updateMe();
+        }
+
+        private void updateMe() {
+            JToken me = data.users[data.id];
+            int globalWin = 0;
+            int rankPoint = Int16.Parse(me["data"]["rankPoint"].ToString());
+            string rank = rankPoint < 5000 ? getRank(rankPoint) : getRankerRank(rankPoint, data.id);
+
+            foreach (JProperty i in me["data"]["record"])
+            {
+                globalWin += Int16.Parse(i.Value[1].ToString());
+            }
+            SetText(myNicknameLabel, data.nickname);
+            SetText(myLevelLabel, "레벨 " + getLevel(Int64.Parse(data.users[data.id]["data"]["score"].ToString())).ToString());
+            SetText(myGlobalWinLabel, "통산 " + globalWin + "승");
+            SetText(myPingLabel, joinComma(me["money"].ToString()) + "핑");
+            SetText(myRankLabel, rank + "  " + joinComma(me["data"]["rankPoint"].ToString()) + "점");
+        }
+
+        private string getRank(int rankPoint) {
+            string rank = "배치 안 됨";
+
+            if (rankPoint >= 50 && rankPoint < 1000)
+            {
+                rank = "브론즈";
+            }
+            else if (rankPoint >= 1000 && rankPoint < 2000)
+            {
+                rank = "실버";
+            }
+            else if (rankPoint >= 2000 && rankPoint < 3000)
+            {
+                rank = "골드";
+            }
+            else if (rankPoint >= 3000 && rankPoint < 4000)
+            {
+                rank = "플래티넘";
+            }
+            else if (rankPoint >= 4000 && rankPoint < 5000)
+            {
+                rank = "다이아몬드";
+            }
+
+            return rank;
+        }
+
+        private string getRankerRank(int rankPoint, string id) {
+            string rank = "마스터";
+            JToken ranking = JObject.Parse(get("https://bfkkutu.kr/ranking"))["data"];
+
+            if (ranking[0]["id"].ToString() == id) rank = "챔피언";
+            if (ranking[1]["id"].ToString() == id || ranking[1]["id"].ToString() == id) rank = "챌린저";
+
+            return rankPoint < 5000 ? getRank(rankPoint) : rank;
+        }
+
+        private string joinComma(string str) {
+            var groups = str.Select((c, ix) => new { Char = c, Index = ix })
+                        .GroupBy(x => x.Index / 3)
+                        .Select(g => String.Concat(g.Select(x => x.Char)));
+            return string.Join(",", groups);
         }
 
         private void updateUserList() {
@@ -256,6 +345,30 @@ namespace BFKKuTuClient
             AppendLabel(roomListBox, title);
         }
 
+        private int getLevel(dynamic a) {
+            int b;
+            int c = EXP.Length;
+            for (b = 0; b < c && !(a < EXP[b]); b++);
+            return b + 1;
+        }
+
+        private int getRequiredScore(int level)
+        {
+            var engine = new Jurassic.ScriptEngine();
+            engine.Evaluate(@"function getRequiredScore(lv){
+                return Math.round(
+                    (!(lv%5)*0.3 + 1) * (!(lv%15)*0.4 + 1) * (!(lv%45)*0.5 + 1) * (
+                        120 + Math.floor(lv/5)*60 + Math.floor(lv*lv/225)*120 + Math.floor(lv*lv/2025)*180
+                    )
+                );
+            }");
+            return engine.CallGlobalFunction<int>("getRequiredScore", level);
+        }
+
+        private void renderMoremi() {
+            //
+        }
+
         public void connectToRoom(KeyValuePair<string, JToken> roomData) {
             JObject json = JObject.Parse("{}");
             json["type"] = "enter";
@@ -291,7 +404,7 @@ namespace BFKKuTuClient
                 };
                 rws.OnMessage += (se, ev) =>
                 {
-                    rwsOnMessage(JObject.Parse(ev.Data));
+                    wsOnMessage(JObject.Parse(ev.Data));
                 };
             };
             var sslProtocolHack = (System.Security.Authentication.SslProtocols)(SSLProtocolHack.TLSv12 | SSLProtocolHack.TLSv11 | SSLProtocolHack.TLS);

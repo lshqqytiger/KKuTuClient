@@ -9,6 +9,7 @@ using WebSocketSharp;
 using Newtonsoft.Json.Linq;
 using System.Net;
 using System.IO;
+using Jurassic.Library;
 
 namespace BFKKuTuClient
 {
@@ -31,6 +32,7 @@ namespace BFKKuTuClient
         public int MAX_LEVEL = 360;
         Login LoginForm = new Login();
         Prompt PromptForm = new Prompt("");
+        public Jurassic.ScriptEngine engine = new Jurassic.ScriptEngine();
 
         public class ClientData
         {
@@ -83,6 +85,13 @@ namespace BFKKuTuClient
             roomBox.Parent = this;
             roomBox.Visible = false;
 
+            engine.Evaluate(@"function getRequiredScore(lv){
+                return Math.round(
+                    (!(lv%5)*0.3 + 1) * (!(lv%15)*0.4 + 1) * (!(lv%45)*0.5 + 1) * (
+                        120 + Math.floor(lv/5)*60 + Math.floor(lv*lv/225)*120 + Math.floor(lv*lv/2025)*180
+                    )
+                );
+            }");
             EXP[0] = getRequiredScore(1);
             for (int i = 2; i < MAX_LEVEL; i++)
             {
@@ -229,17 +238,39 @@ namespace BFKKuTuClient
             JToken me = data.users[data.id];
             int globalWin = 0;
             int rankPoint = Int16.Parse(me["data"]["rankPoint"].ToString());
+            int level = getLevel(me["data"]["score"]);
             string rank = rankPoint < 5000 ? getRank(rankPoint) : getRankerRank(rankPoint, data.id);
+            engine.Evaluate(@"function calcProgress(e){
+                var l = EXP.length;
+                e = JSON.parse(e);
+
+	            for(var i=0; i<l; i++) if(e.data.score < EXP[i]) break;
+                return Math.floor((e.data.score - (EXP[i - 1] || 0)) / ((EXP[i]) - (EXP[i - 1] || 0)) * 100);
+            }");
+            engine.SetGlobalValue("MAX_LEVEL", 360);
+            engine.SetGlobalValue("EXP", NewArray(new int[] { }));
+            engine.Execute(@"EXP.push(getRequiredScore(1));
+                for(i=2; i<MAX_LEVEL; i++){
+                    EXP.push(EXP[i-2] + getRequiredScore(i));
+                }
+                EXP[MAX_LEVEL - 1] = Infinity;
+                EXP.push(Infinity);
+            ");
 
             foreach (JProperty i in me["data"]["record"])
             {
                 globalWin += Int16.Parse(i.Value[1].ToString());
             }
             SetText(myNicknameLabel, data.nickname);
-            SetText(myLevelLabel, "레벨 " + getLevel(Int64.Parse(data.users[data.id]["data"]["score"].ToString())).ToString());
+            SetText(myLevelLabel, "레벨 " + level.ToString());
+            myLevelImage.ImageLocation = @"resources\kkutu\lv\lv" + level.ToString("D4") + ".png";
             SetText(myGlobalWinLabel, "통산 " + globalWin + "승");
-            SetText(myPingLabel, joinComma(me["money"].ToString()) + "핑");
-            SetText(myRankLabel, rank + "  " + joinComma(me["data"]["rankPoint"].ToString()) + "점");
+            SetText(myPingLabel, Int32.Parse(me["money"].ToString()).ToString("N0") + "핑");
+            SetText(myRankLabel, rank + "  " + Int32.Parse(me["data"]["rankPoint"].ToString()).ToString("N0") + "점");
+            SetText(myLevelProgressLabel, Int32.Parse(me["data"]["score"].ToString()).ToString("N0") + " / " + Int32.Parse(EXP[level - 1].ToString()).ToString("N0") + "점");
+            SetText(myOkgLabel, prettyTime(double.Parse(data._playTime)));
+            SetProgressBarValue(myLevelProgressBar, engine.CallGlobalFunction<int>("calcProgress", new object[] { me.ToString() }));
+            SetProgressBarValue(myOkgProgressBar, Int32.Parse((double.Parse(data._playTime) % 600000 / 6000).ToString()));
         }
 
         private string getRank(int rankPoint) {
@@ -279,11 +310,17 @@ namespace BFKKuTuClient
             return rankPoint < 5000 ? getRank(rankPoint) : rank;
         }
 
-        private string joinComma(string str) {
-            var groups = str.Select((c, ix) => new { Char = c, Index = ix })
-                        .GroupBy(x => x.Index / 3)
-                        .Select(g => String.Concat(g.Select(x => x.Char)));
-            return string.Join(",", groups);
+        private string prettyTime(double time)
+        {
+            double min = Math.Floor(time / 60000) % 60;
+            double sec = Math.Floor(time * 0.001) % 60;
+            double hour = Math.Floor(time / 3600000);
+            string[] txt = new string[] { "", "", "" };
+
+            if (hour != 0) txt[0] = hour + "시";
+            if (min != 0) txt[1] = min + "분";
+            if (hour == 0) txt[2] = sec + "초";
+            return String.Join(" ", txt);
         }
 
         private void updateUserList() {
@@ -354,14 +391,6 @@ namespace BFKKuTuClient
 
         private int getRequiredScore(int level)
         {
-            var engine = new Jurassic.ScriptEngine();
-            engine.Evaluate(@"function getRequiredScore(lv){
-                return Math.round(
-                    (!(lv%5)*0.3 + 1) * (!(lv%15)*0.4 + 1) * (!(lv%45)*0.5 + 1) * (
-                        120 + Math.floor(lv/5)*60 + Math.floor(lv*lv/225)*120 + Math.floor(lv*lv/2025)*180
-                    )
-                );
-            }");
             return engine.CallGlobalFunction<int>("getRequiredScore", level);
         }
 
@@ -517,6 +546,7 @@ namespace BFKKuTuClient
         delegate void SetAppendPanelCallback(Panel target, Panel element);
         delegate void SetAppendLabelCallback(Panel panel, Label label);
         delegate void SetAppendDynamicCallback(dynamic target, dynamic element);
+        delegate void SetProgressBarValueCallback(ProgressBar progressbar, int value);
         delegate void SetDynamicShowCallback(dynamic element);
         delegate void SetDynamicHideCallback(dynamic element);
 
@@ -571,6 +601,18 @@ namespace BFKKuTuClient
             }
         }
 
+        private void SetProgressBarValue(ProgressBar progressbar, int value) {
+            if (progressbar.InvokeRequired)
+            {
+                SetProgressBarValueCallback d = new SetProgressBarValueCallback(SetProgressBarValue);
+                this.Invoke(d, new object[] { progressbar, value });
+            }
+            else
+            {
+                progressbar.Value = value;
+            }
+        }
+
         private void Show(dynamic element) {
             if (element.InvokeRequired)
             {
@@ -607,6 +649,10 @@ namespace BFKKuTuClient
                 else e.Cancel = true;
             }
             base.OnClosing(e);
+        }
+        private ArrayInstance NewArray<T>(IEnumerable<T> data)
+        {
+            return engine.Array.New(data.Cast<object>().ToArray());
         }
     }
 }

@@ -36,6 +36,7 @@ namespace BFKKuTuClient
             this.connectBtn = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.chatBox = new System.Windows.Forms.Panel();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.toLogin = new System.Windows.Forms.Label();
             this.moremiBox = new System.Windows.Forms.PictureBox();
             this.userListBox = new System.Windows.Forms.Panel();
@@ -52,8 +53,7 @@ namespace BFKKuTuClient
             this.myLevelProgressLabel = new System.Windows.Forms.Label();
             this.myPingLabel = new System.Windows.Forms.Label();
             this.myRankLabel = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.myOkgLabel = new System.Windows.Forms.Label();
             this.myOkgProgressBar = new System.Windows.Forms.ProgressBar();
             this.chatBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.moremiBox)).BeginInit();
@@ -119,6 +119,13 @@ namespace BFKKuTuClient
             this.chatBox.Name = "chatBox";
             this.chatBox.Size = new System.Drawing.Size(558, 225);
             this.chatBox.TabIndex = 5;
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(-102, 155);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(86, 23);
+            this.progressBar1.TabIndex = 25;
             // 
             // toLogin
             // 
@@ -188,9 +195,9 @@ namespace BFKKuTuClient
             // 
             // moremi0
             // 
-            this.moremi0.Image = ((System.Drawing.Image)(resources.GetObject("moremi0.Image")));
+            this.moremi0.ImageLocation = "https://bfkkutu.kr/img/kkutu/moremi/body.png";
             this.moremi0.InitialImage = ((System.Drawing.Image)(resources.GetObject("moremi0.InitialImage")));
-            this.moremi0.Location = new System.Drawing.Point(14, 538);
+            this.moremi0.Location = new System.Drawing.Point(15, 535);
             this.moremi0.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.moremi0.Name = "moremi0";
             this.moremi0.Size = new System.Drawing.Size(120, 120);
@@ -219,7 +226,7 @@ namespace BFKKuTuClient
             // 
             // myLevelImage
             // 
-            this.myLevelImage.Image = ((System.Drawing.Image)(resources.GetObject("myLevelImage.Image")));
+            this.myLevelImage.ImageLocation = "https://bfkkutu.kr/img/kkutu/lv/lv0001.png";
             this.myLevelImage.Location = new System.Drawing.Point(30, 471);
             this.myLevelImage.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.myLevelImage.Name = "myLevelImage";
@@ -270,21 +277,14 @@ namespace BFKKuTuClient
             this.myRankLabel.TabIndex = 24;
             this.myRankLabel.Text = "배치 안 됨  n점";
             // 
-            // label3
+            // myOkgLabel
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(172, 640);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(26, 15);
-            this.label3.TabIndex = 26;
-            this.label3.Text = "n초";
-            // 
-            // progressBar1
-            // 
-            this.progressBar1.Location = new System.Drawing.Point(-102, 155);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(86, 23);
-            this.progressBar1.TabIndex = 25;
+            this.myOkgLabel.AutoSize = true;
+            this.myOkgLabel.Location = new System.Drawing.Point(172, 640);
+            this.myOkgLabel.Name = "myOkgLabel";
+            this.myOkgLabel.Size = new System.Drawing.Size(26, 15);
+            this.myOkgLabel.TabIndex = 26;
+            this.myOkgLabel.Text = "n초";
             // 
             // myOkgProgressBar
             // 
@@ -298,7 +298,7 @@ namespace BFKKuTuClient
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1108, 745);
-            this.Controls.Add(this.label3);
+            this.Controls.Add(this.myOkgLabel);
             this.Controls.Add(this.myOkgProgressBar);
             this.Controls.Add(this.myRankLabel);
             this.Controls.Add(this.myPingLabel);
@@ -362,7 +362,7 @@ namespace BFKKuTuClient
         private System.Windows.Forms.Label myLevelProgressLabel;
         private System.Windows.Forms.Label myPingLabel;
         private System.Windows.Forms.Label myRankLabel;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label myOkgLabel;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.ProgressBar myOkgProgressBar;
     }

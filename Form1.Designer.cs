@@ -55,12 +55,14 @@ namespace BFKKuTuClient
             this.myRankLabel = new System.Windows.Forms.Label();
             this.myOkgLabel = new System.Windows.Forms.Label();
             this.myOkgProgressBar = new System.Windows.Forms.ProgressBar();
+            this.myMoremiPanel = new System.Windows.Forms.Panel();
             this.chatBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.moremiBox)).BeginInit();
             this.roomListBox.SuspendLayout();
             this.roomBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.moremi0)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.myLevelImage)).BeginInit();
+            this.myMoremiPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -195,9 +197,10 @@ namespace BFKKuTuClient
             // 
             // moremi0
             // 
+            this.moremi0.BackColor = System.Drawing.Color.Transparent;
             this.moremi0.ImageLocation = "https://bfkkutu.kr/img/kkutu/moremi/body.png";
             this.moremi0.InitialImage = ((System.Drawing.Image)(resources.GetObject("moremi0.InitialImage")));
-            this.moremi0.Location = new System.Drawing.Point(15, 535);
+            this.moremi0.Location = new System.Drawing.Point(0, 0);
             this.moremi0.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.moremi0.Name = "moremi0";
             this.moremi0.Size = new System.Drawing.Size(120, 120);
@@ -293,11 +296,21 @@ namespace BFKKuTuClient
             this.myOkgProgressBar.Size = new System.Drawing.Size(89, 23);
             this.myOkgProgressBar.TabIndex = 25;
             // 
+            // myMoremiPanel
+            // 
+            this.myMoremiPanel.BackColor = System.Drawing.Color.Transparent;
+            this.myMoremiPanel.Controls.Add(this.moremi0);
+            this.myMoremiPanel.Location = new System.Drawing.Point(14, 535);
+            this.myMoremiPanel.Name = "myMoremiPanel";
+            this.myMoremiPanel.Size = new System.Drawing.Size(120, 120);
+            this.myMoremiPanel.TabIndex = 27;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1108, 745);
+            this.Controls.Add(this.myMoremiPanel);
             this.Controls.Add(this.myOkgLabel);
             this.Controls.Add(this.myOkgProgressBar);
             this.Controls.Add(this.myRankLabel);
@@ -308,7 +321,6 @@ namespace BFKKuTuClient
             this.Controls.Add(this.myLevelImage);
             this.Controls.Add(this.myLevelLabel);
             this.Controls.Add(this.myNicknameLabel);
-            this.Controls.Add(this.moremi0);
             this.Controls.Add(this.roomListBox);
             this.Controls.Add(this.userListBox);
             this.Controls.Add(this.toLogin);
@@ -333,6 +345,7 @@ namespace BFKKuTuClient
             this.roomBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.moremi0)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.myLevelImage)).EndInit();
+            this.myMoremiPanel.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -365,6 +378,7 @@ namespace BFKKuTuClient
         private System.Windows.Forms.Label myOkgLabel;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.ProgressBar myOkgProgressBar;
+        private System.Windows.Forms.Panel myMoremiPanel;
     }
 }
 

@@ -33,6 +33,8 @@ namespace BFKKuTuClient
         Login LoginForm = new Login();
         Prompt PromptForm = new Prompt("");
         public Jurassic.ScriptEngine engine = new Jurassic.ScriptEngine();
+        public JObject Const = JObject.Parse("{}");
+        public string path = Directory.GetCurrentDirectory();
 
         public class ClientData
         {
@@ -53,8 +55,9 @@ namespace BFKKuTuClient
             public Boolean _cF;
             public Boolean gaming = false;
             public JObject box;
+            public JObject shop;
         }
-
+        
         private enum SSLProtocolHack
         {
             TLS = 192,
@@ -92,6 +95,28 @@ namespace BFKKuTuClient
                     )
                 );
             }");
+            engine.Evaluate(@"function calcProgress(e){
+                var l = EXP.length;
+                e = JSON.parse(e);
+
+	            for(var i=0; i<l; i++) if(e.data.score < EXP[i]) break;
+                return Math.floor((e.data.score - (EXP[i - 1] || 0)) / ((EXP[i]) - (EXP[i - 1] || 0)) * 100);
+            }");
+            engine.SetGlobalValue("MAX_LEVEL", 360);
+            engine.SetGlobalValue("EXP", NewArray(new int[] { }));
+            engine.Execute(@"EXP.push(getRequiredScore(1));
+                for(i=2; i<MAX_LEVEL; i++){
+                    EXP.push(EXP[i-2] + getRequiredScore(i));
+                }
+                EXP[MAX_LEVEL - 1] = Infinity;
+                EXP.push(Infinity);
+            ");
+            engine.Evaluate(@"function getLevel(score){
+                var i, l = EXP.length;
+	
+                for(i=0; i<l; i++) if(score < EXP[i]) break;
+                return i+1;
+            }");
             EXP[0] = getRequiredScore(1);
             for (int i = 2; i < MAX_LEVEL; i++)
             {
@@ -99,6 +124,7 @@ namespace BFKKuTuClient
             }
             EXP[MAX_LEVEL - 1] = int.MaxValue;
             EXP[MAX_LEVEL] = int.MaxValue;
+            Const = JObject.Parse(get("https://bfkkutu.kr/client/loadgame"));
         }
 
         private dynamic get(string url) {
@@ -228,9 +254,10 @@ namespace BFKKuTuClient
         }
 
         private void updateUI() {
+            loadShop(); // temp
             updateUserList();
             updateRoomList();
-            renderMoremi();
+            renderMoremi(myMoremiPanel, data.users[data.id]["equip"]);
             updateMe();
         }
 
@@ -238,24 +265,8 @@ namespace BFKKuTuClient
             JToken me = data.users[data.id];
             int globalWin = 0;
             int rankPoint = Int16.Parse(me["data"]["rankPoint"].ToString());
-            int level = getLevel(me["data"]["score"]);
+            int level = getLevel(Int32.Parse(me["data"]["score"].ToString()));
             string rank = rankPoint < 5000 ? getRank(rankPoint) : getRankerRank(rankPoint, data.id);
-            engine.Evaluate(@"function calcProgress(e){
-                var l = EXP.length;
-                e = JSON.parse(e);
-
-	            for(var i=0; i<l; i++) if(e.data.score < EXP[i]) break;
-                return Math.floor((e.data.score - (EXP[i - 1] || 0)) / ((EXP[i]) - (EXP[i - 1] || 0)) * 100);
-            }");
-            engine.SetGlobalValue("MAX_LEVEL", 360);
-            engine.SetGlobalValue("EXP", NewArray(new int[] { }));
-            engine.Execute(@"EXP.push(getRequiredScore(1));
-                for(i=2; i<MAX_LEVEL; i++){
-                    EXP.push(EXP[i-2] + getRequiredScore(i));
-                }
-                EXP[MAX_LEVEL - 1] = Infinity;
-                EXP.push(Infinity);
-            ");
 
             foreach (JProperty i in me["data"]["record"])
             {
@@ -382,11 +393,12 @@ namespace BFKKuTuClient
             AppendLabel(roomListBox, title);
         }
 
-        private int getLevel(dynamic a) {
-            int b;
+        private int getLevel(int score) {
+            /*int b;
             int c = EXP.Length;
             for (b = 0; b < c && !(a < EXP[b]); b++);
-            return b + 1;
+            return b + 1;*/
+            return engine.CallGlobalFunction<int>("getLevel", score);
         }
 
         private int getRequiredScore(int level)
@@ -394,8 +406,66 @@ namespace BFKKuTuClient
             return engine.CallGlobalFunction<int>("getRequiredScore", level);
         }
 
-        private void renderMoremi() {
-            //
+        private void renderMoremi(Panel target, JToken equip) {
+            Bitmap moremiBitmap = new Bitmap(120, 120);
+            Graphics g = Graphics.FromImage(moremiBitmap);
+            JObject LR = JObject.Parse("{ 'Mlhand': 'Mhand', 'Mrhand': 'Mhand' }");
+
+            Image body = Bitmap.FromFile(Path.Combine(path, @"resources\kkutu\moremi\body.png"));
+            g.DrawImage(body, 0, 0, moremiBitmap.Width, moremiBitmap.Height);
+            foreach (string i in Const["MOREMI_PART"])
+            {
+                string key = "M" + i;
+                Image img = Bitmap.FromFile(Path.Combine(path, iImage(equip[key] == null ? @"resources\kkutu\moremi\" + key + @"\def.png" : equip[key].ToString(), LR[key] == null ? key : LR[key].ToString())));
+                g.DrawImage(img, 0, 0, moremiBitmap.Width, moremiBitmap.Height);
+            }
+            moremi0.Image = moremiBitmap;
+        }
+
+        private string iImage(string key, dynamic sObj)
+        {
+            JObject obj;
+            string extension;
+
+            if (key[0] == '$')
+            {
+                return iDynImage(key.Substring(1, 3), key.Substring(4));
+            }
+            if (data.shop[key] != null) {
+                obj = JObject.Parse(data.shop[key].ToString());
+                extension = obj["options"]["gif"] == null ? ".png" : ".gif";
+                if (obj["group"].ToString().Substring(0, 3) == "BDG") return @"resources\kkutu\moremi\badge\" + obj["_id"] + extension;
+                return (obj["group"].ToString()[0] == 'M')
+                    ? @"resources\kkutu\moremi\" + obj["group"].ToString().Substring(1) + "/" + obj["_id"] + extension
+                    : @"resources\kkutu\shop\" + obj["_id"] + ".png";
+            }
+            else {
+                extension = ".png";
+                if (sObj.Substring(0, 3) == "BDG") return @"resources\kkutu\moremi\badge\def" + extension;
+                return (sObj[0] == 'M')
+                    ? (sObj.IndexOf("heco") != -1 ? @"resources\kkutu\moremi\head\def" + extension : @"resources\kkutu\moremi\" + sObj.Substring(1) + @"\def" + extension)
+                    : @"resources\kkutu\shop\def" + ".png";
+            };
+        }
+
+        private string iDynImage(string group, string data)
+        {
+            // let's think about how to handle WordPieces
+            return "";
+        }
+
+        private void loadShop() {
+            processShop();
+        }
+
+        private void processShop()
+        {
+            JObject res = JObject.Parse(get("https://bfkkutu.kr/shop"));
+            data.shop = JObject.Parse("{}");
+            foreach (JToken i in res["goods"])
+            {
+                data.shop[i["_id"].ToString()] = i;
+            }
         }
 
         public void connectToRoom(KeyValuePair<string, JToken> roomData) {
@@ -446,32 +516,6 @@ namespace BFKKuTuClient
             promptResult = text;
         }
 
-        private void rwsOnMessage(JObject res) {
-            // TEMPORARY
-            switch (res["type"].ToString()) {
-                case "chat":
-                    if (!data.admin)
-                    {
-                        if (!data._cF)
-                        {
-                            Chat(res["profile"].ToString(), res["value"].ToString(), "", "");
-                        }
-                        else
-                        {
-                            // TODO
-                        }
-                    }
-                    else
-                    {
-                        Chat(res["profile"].ToString(), res["value"].ToString(), "", "");
-                        //res["notice"] ? notice(L["error_" + a.code]) : Chat(res["profile"].ToString(), res["value"].ToString(), res["from"].ToString(), res["timestamp"].ToString());
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-
         private void sendChat(object sender, EventArgs e)
         {
             if (!wsConnected) {
@@ -515,9 +559,9 @@ namespace BFKKuTuClient
         private void disconnect() {
             if (wsConnected) ws.Close();
             if (rws.ReadyState != WebSocketState.Closed || rws.ReadyState != WebSocketState.Closing) rws.Close();
-            userListBox.Controls.Clear();
-            roomListBox.Controls.Clear();
-            chatBox.Controls.Clear();
+            Clear(userListBox);
+            Clear(roomListBox);
+            Clear(chatBox);
         }
 
         private void Chat(String _profile, String value, String from, String timestamp) {
@@ -543,12 +587,14 @@ namespace BFKKuTuClient
         }
 
         delegate void SetTextCallback(dynamic label, string text);
-        delegate void SetAppendPanelCallback(Panel target, Panel element);
-        delegate void SetAppendLabelCallback(Panel panel, Label label);
-        delegate void SetAppendDynamicCallback(dynamic target, dynamic element);
+        delegate void AppendPanelCallback(Panel target, Panel element);
+        delegate void AppendLabelCallback(Panel panel, Label label);
+        delegate void AppendDynamicCallback(dynamic target, dynamic element);
+        delegate void AddControlCallback(Panel target, dynamic element);
         delegate void SetProgressBarValueCallback(ProgressBar progressbar, int value);
-        delegate void SetDynamicShowCallback(dynamic element);
-        delegate void SetDynamicHideCallback(dynamic element);
+        delegate void ClearPanelCallback(Panel panel);
+        delegate void DynamicShowCallback(dynamic element);
+        delegate void DynamicHideCallback(dynamic element);
 
         private void SetText(dynamic label, string text)
         {
@@ -567,7 +613,7 @@ namespace BFKKuTuClient
         {
             if (target.InvokeRequired)
             {
-                SetAppendPanelCallback d = new SetAppendPanelCallback(AppendPanel);
+                AppendPanelCallback d = new AppendPanelCallback(AppendPanel);
                 this.Invoke(d, new object[] { target, element });
             }
             else
@@ -580,7 +626,7 @@ namespace BFKKuTuClient
         {
             if (panel.InvokeRequired)
             {
-                SetAppendLabelCallback d = new SetAppendLabelCallback(AppendLabel);
+                AppendLabelCallback d = new AppendLabelCallback(AppendLabel);
                 this.Invoke(d, new object[] { panel, label });
             }
             else
@@ -592,7 +638,7 @@ namespace BFKKuTuClient
         private void AppendDynamic(dynamic target, dynamic element) {
             if (target.InvokeRequired)
             {
-                SetAppendDynamicCallback d = new SetAppendDynamicCallback(AppendDynamic);
+                AppendDynamicCallback d = new AppendDynamicCallback(AppendDynamic);
                 this.Invoke(d, new object[] { target, element });
             }
             else
@@ -616,7 +662,7 @@ namespace BFKKuTuClient
         private void Show(dynamic element) {
             if (element.InvokeRequired)
             {
-                SetDynamicShowCallback d = new SetDynamicShowCallback(Show);
+                DynamicShowCallback d = new DynamicShowCallback(Show);
                 this.Invoke(d, new object[] { element });
             }
             else
@@ -629,12 +675,38 @@ namespace BFKKuTuClient
         {
             if (element.InvokeRequired)
             {
-                SetDynamicHideCallback d = new SetDynamicHideCallback(Hide);
+                DynamicHideCallback d = new DynamicHideCallback(Hide);
                 this.Invoke(d, new object[] { element });
             }
             else
             {
                 element.Visible = false;
+            }
+        }
+
+        private void Clear(Panel panel)
+        {
+            if (panel.InvokeRequired)
+            {
+                ClearPanelCallback d = new ClearPanelCallback(Clear);
+                this.Invoke(d, new object[] { panel });
+            }
+            else
+            {
+                panel.Controls.Clear();
+            }
+        }
+
+        private void AddControl(Panel target, dynamic element)
+        {
+            if (target.InvokeRequired)
+            {
+                AddControlCallback d = new AddControlCallback(AddControl);
+                this.Invoke(d, new object[] { target, element });
+            }
+            else
+            {
+                target.Controls.Add(element);
             }
         }
 

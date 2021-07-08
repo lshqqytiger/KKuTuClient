@@ -56,6 +56,14 @@ namespace BFKKuTuClient
             this.myOkgLabel = new System.Windows.Forms.Label();
             this.myOkgProgressBar = new System.Windows.Forms.ProgressBar();
             this.myMoremiPanel = new System.Windows.Forms.Panel();
+            this.guideBtn = new System.Windows.Forms.Button();
+            this.settingBtn = new System.Windows.Forms.Button();
+            this.friendBtn = new System.Windows.Forms.Button();
+            this.leaderboardBtn = new System.Windows.Forms.Button();
+            this.createRoomBtn = new System.Windows.Forms.Button();
+            this.quickBtn = new System.Windows.Forms.Button();
+            this.shopBtn = new System.Windows.Forms.Button();
+            this.menuBarPanel = new System.Windows.Forms.Panel();
             this.chatBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.moremiBox)).BeginInit();
             this.roomListBox.SuspendLayout();
@@ -63,6 +71,7 @@ namespace BFKKuTuClient
             ((System.ComponentModel.ISupportInitialize)(this.moremi0)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.myLevelImage)).BeginInit();
             this.myMoremiPanel.SuspendLayout();
+            this.menuBarPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -305,11 +314,91 @@ namespace BFKKuTuClient
             this.myMoremiPanel.Size = new System.Drawing.Size(120, 120);
             this.myMoremiPanel.TabIndex = 27;
             // 
+            // guideBtn
+            // 
+            this.guideBtn.Location = new System.Drawing.Point(3, 3);
+            this.guideBtn.Name = "guideBtn";
+            this.guideBtn.Size = new System.Drawing.Size(75, 23);
+            this.guideBtn.TabIndex = 28;
+            this.guideBtn.Text = "도움말";
+            this.guideBtn.UseVisualStyleBackColor = true;
+            // 
+            // settingBtn
+            // 
+            this.settingBtn.Location = new System.Drawing.Point(72, 3);
+            this.settingBtn.Name = "settingBtn";
+            this.settingBtn.Size = new System.Drawing.Size(75, 23);
+            this.settingBtn.TabIndex = 29;
+            this.settingBtn.Text = "설정";
+            this.settingBtn.UseVisualStyleBackColor = true;
+            // 
+            // friendBtn
+            // 
+            this.friendBtn.Location = new System.Drawing.Point(144, 3);
+            this.friendBtn.Name = "friendBtn";
+            this.friendBtn.Size = new System.Drawing.Size(75, 23);
+            this.friendBtn.TabIndex = 30;
+            this.friendBtn.Text = "친구 목록";
+            this.friendBtn.UseVisualStyleBackColor = true;
+            // 
+            // leaderboardBtn
+            // 
+            this.leaderboardBtn.Location = new System.Drawing.Point(213, 3);
+            this.leaderboardBtn.Name = "leaderboardBtn";
+            this.leaderboardBtn.Size = new System.Drawing.Size(75, 23);
+            this.leaderboardBtn.TabIndex = 31;
+            this.leaderboardBtn.Text = "랭킹";
+            this.leaderboardBtn.UseVisualStyleBackColor = true;
+            // 
+            // createRoomBtn
+            // 
+            this.createRoomBtn.Location = new System.Drawing.Point(282, 3);
+            this.createRoomBtn.Name = "createRoomBtn";
+            this.createRoomBtn.Size = new System.Drawing.Size(75, 23);
+            this.createRoomBtn.TabIndex = 32;
+            this.createRoomBtn.Text = "방 만들기";
+            this.createRoomBtn.UseVisualStyleBackColor = true;
+            this.createRoomBtn.Click += new System.EventHandler(this.createRoomBtn_Click);
+            // 
+            // quickBtn
+            // 
+            this.quickBtn.Location = new System.Drawing.Point(352, 3);
+            this.quickBtn.Name = "quickBtn";
+            this.quickBtn.Size = new System.Drawing.Size(75, 23);
+            this.quickBtn.TabIndex = 33;
+            this.quickBtn.Text = "빠른 입장";
+            this.quickBtn.UseVisualStyleBackColor = true;
+            // 
+            // shopBtn
+            // 
+            this.shopBtn.Location = new System.Drawing.Point(423, 3);
+            this.shopBtn.Name = "shopBtn";
+            this.shopBtn.Size = new System.Drawing.Size(75, 23);
+            this.shopBtn.TabIndex = 34;
+            this.shopBtn.Text = "상점";
+            this.shopBtn.UseVisualStyleBackColor = true;
+            // 
+            // menuBarPanel
+            // 
+            this.menuBarPanel.Controls.Add(this.shopBtn);
+            this.menuBarPanel.Controls.Add(this.guideBtn);
+            this.menuBarPanel.Controls.Add(this.quickBtn);
+            this.menuBarPanel.Controls.Add(this.settingBtn);
+            this.menuBarPanel.Controls.Add(this.createRoomBtn);
+            this.menuBarPanel.Controls.Add(this.friendBtn);
+            this.menuBarPanel.Controls.Add(this.leaderboardBtn);
+            this.menuBarPanel.Location = new System.Drawing.Point(249, 49);
+            this.menuBarPanel.Name = "menuBarPanel";
+            this.menuBarPanel.Size = new System.Drawing.Size(558, 28);
+            this.menuBarPanel.TabIndex = 35;
+            this.menuBarPanel.Visible = false;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1108, 745);
+            this.Controls.Add(this.menuBarPanel);
             this.Controls.Add(this.myMoremiPanel);
             this.Controls.Add(this.myOkgLabel);
             this.Controls.Add(this.myOkgProgressBar);
@@ -346,6 +435,7 @@ namespace BFKKuTuClient
             ((System.ComponentModel.ISupportInitialize)(this.moremi0)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.myLevelImage)).EndInit();
             this.myMoremiPanel.ResumeLayout(false);
+            this.menuBarPanel.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -379,6 +469,14 @@ namespace BFKKuTuClient
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.ProgressBar myOkgProgressBar;
         private System.Windows.Forms.Panel myMoremiPanel;
+        private System.Windows.Forms.Button guideBtn;
+        private System.Windows.Forms.Button settingBtn;
+        private System.Windows.Forms.Button friendBtn;
+        private System.Windows.Forms.Button leaderboardBtn;
+        private System.Windows.Forms.Button createRoomBtn;
+        private System.Windows.Forms.Button quickBtn;
+        private System.Windows.Forms.Button shopBtn;
+        private System.Windows.Forms.Panel menuBarPanel;
     }
 }
 

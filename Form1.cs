@@ -15,9 +15,32 @@ namespace BFKKuTuClient
 {
     public delegate void LoginGetEventHandler(string _id, string _pw, string[] data);
     public delegate void PromptGetEventHandler(string text);
+    public delegate void CreateRoomEventHandler(Dictionary<string, string> roomData);
 
     public partial class Form1 : Form
     {
+        public class ClientData
+        {
+            public String id;
+            public Boolean admin;
+            public String careful;
+            public int soundLoadCount = 0;
+            public int place = 0;
+            public String nickname;
+            public String exordial;
+            public JObject users;
+            public JObject robots = new JObject();
+            public JObject rooms;
+            public JObject friends;
+            public JObject _friends = new JObject();
+            public String _playTime;
+            public String _okg;
+            public Boolean _cF;
+            public Boolean gaming = false;
+            public JObject box;
+            public JObject shop;
+        }
+
         public WebSocket ws = new WebSocket("wss://ws.bfkkutu.kr/g10000/");
         public WebSocket rws = new WebSocket("wss://ws.bfkkutu.kr/g10000/");
         public String sessionId = "";
@@ -30,34 +53,15 @@ namespace BFKKuTuClient
         public string promptResult = String.Empty;
         public int[] EXP = new int[361];
         public int MAX_LEVEL = 360;
+        CreateRoomDialog CreateRoomDialogForm = new CreateRoomDialog(new string[] { }, new JObject(), new JObject(), new JObject(), new ClientData());
         Login LoginForm = new Login();
         Prompt PromptForm = new Prompt("");
         public Jurassic.ScriptEngine engine = new Jurassic.ScriptEngine();
-        public JObject Const = JObject.Parse("{}");
+        public JObject Const = new JObject();
+        public JObject Lang = new JObject();
         public string path = Directory.GetCurrentDirectory();
+        public string[] MODE;
 
-        public class ClientData
-        {
-            public String id;
-            public Boolean admin;
-            public String careful;
-            public int soundLoadCount = 0;
-            public int place = 0;
-            public String nickname;
-            public String exordial;
-            public JObject users;
-            public JObject robots = JObject.Parse("{}");
-            public JObject rooms;
-            public JObject friends;
-            public JObject _friends = JObject.Parse("{}");
-            public String _playTime;
-            public String _okg;
-            public Boolean _cF;
-            public Boolean gaming = false;
-            public JObject box;
-            public JObject shop;
-        }
-        
         private enum SSLProtocolHack
         {
             TLS = 192,
@@ -71,6 +75,7 @@ namespace BFKKuTuClient
 
             Login.LoginGetEvent += new LoginGetEventHandler(this.loginProcess);
             Prompt.PromptGetEvent += new PromptGetEventHandler(this.promptConfirmed);
+            CreateRoomDialog.CreateRoomEvent += new CreateRoomEventHandler(this.createRoomHandler);
 
             chatBox.AutoScroll = false;
             chatBox.HorizontalScroll.Enabled = false;
@@ -125,6 +130,9 @@ namespace BFKKuTuClient
             EXP[MAX_LEVEL - 1] = int.MaxValue;
             EXP[MAX_LEVEL] = int.MaxValue;
             Const = JObject.Parse(get("https://bfkkutu.kr/client/loadgame"));
+            Lang = JObject.Parse(Const["lang"].ToString());
+            Const.Remove("lang");
+            MODE = Const["MODE"].ToObject<string[]>();
         }
 
         private dynamic get(string url) {
@@ -164,6 +172,7 @@ namespace BFKKuTuClient
                     wsConnected = true;
                     SetText(connectBtn, "Disconnect");
                     SetText(label2, "Connected");
+                    Show(menuBarPanel);
                 };
                 ws.OnClose += (se, ev) =>
                 {
@@ -248,6 +257,15 @@ namespace BFKKuTuClient
                     data.box = JObject.Parse(res["box"].ToString());
                     updateUI();
                     break;
+                case "preRoom":
+                    connectToRoom(Int16.Parse(res["id"].ToString()));
+                    break;
+                case "room":
+                    Show(roomBox);
+                    Hide(roomListBox);
+                    SetText(roomTitleLabel, "[" + res["room"]["id"].ToString() + "] " + res["room"]["title"].ToString());
+                    updateUI();
+                    break;
                 default:
                     break;
             }
@@ -255,6 +273,8 @@ namespace BFKKuTuClient
 
         private void updateUI() {
             loadShop(); // temp
+            Clear(userListBox);
+            Clear(roomListBox);
             updateUserList();
             updateRoomList();
             renderMoremi(myMoremiPanel, data.users[data.id]["equip"]);
@@ -348,14 +368,14 @@ namespace BFKKuTuClient
                 AppendLabel(userListBox, user);
                 userCount++;
             }
-            Label title = new Label();
-            title.Name = "userListTitle";
-            title.Text = "접속 중인 유저 "+(userCount - 1)+"명";
-            title.AutoSize = true;
-            title.MaximumSize = new Size(166, 20);
-            title.Size = new Size(166, 20);
-            title.Location = new Point(0, 0);
-            AppendLabel(userListBox, title);
+            Label userListTitle = new Label();
+            userListTitle.Name = "userListTitle";
+            userListTitle.Text = "접속 중인 유저 "+(userCount - 1)+"명";
+            userListTitle.AutoSize = true;
+            userListTitle.MaximumSize = new Size(166, 20);
+            userListTitle.Size = new Size(166, 20);
+            userListTitle.Location = new Point(0, 0);
+            AppendLabel(userListBox, userListTitle);
         }
 
         private void updateRoomList() {
@@ -378,19 +398,19 @@ namespace BFKKuTuClient
                 room.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
                 room.Click += (se, ev) =>
                 {
-                    connectToRoom(i);
+                    connectToRoomThroughList(i);
                 };
                 AppendPanel(roomListBox, room);
                 roomCount++;
             }
-            Label title = new Label();
-            title.Name = "roomListTitle";
-            title.Text = "방 " + roomCount + "개";
-            title.AutoSize = true;
-            title.MaximumSize = new Size(186, 20);
-            title.Size = new Size(186, 20);
-            title.Location = new Point(0, 0);
-            AppendLabel(roomListBox, title);
+            Label roomListTitle = new Label();
+            roomListTitle.Name = "roomListTitle";
+            roomListTitle.Text = "방 " + roomCount + "개";
+            roomListTitle.AutoSize = true;
+            roomListTitle.MaximumSize = new Size(186, 20);
+            roomListTitle.Size = new Size(186, 20);
+            roomListTitle.Location = new Point(0, 0);
+            AppendLabel(roomListBox, roomListTitle);
         }
 
         private int getLevel(int score) {
@@ -461,15 +481,15 @@ namespace BFKKuTuClient
         private void processShop()
         {
             JObject res = JObject.Parse(get("https://bfkkutu.kr/shop"));
-            data.shop = JObject.Parse("{}");
+            data.shop = new JObject();
             foreach (JToken i in res["goods"])
             {
                 data.shop[i["_id"].ToString()] = i;
             }
         }
 
-        public void connectToRoom(KeyValuePair<string, JToken> roomData) {
-            JObject json = JObject.Parse("{}");
+        public void connectToRoomThroughList(KeyValuePair<string, JToken> roomData) {
+            JObject json = new JObject();
             json["type"] = "enter";
             json["id"] = roomData.Key;
             if ((string)roomData.Value["password"] == "True") {
@@ -487,6 +507,39 @@ namespace BFKKuTuClient
                     Hide(roomListBox);
                     SetText(roomTitleLabel, "[" + roomData.Key + "] " + roomData.Value["title"]);
                     joinedRoom = Int16.Parse(roomData.Key);
+                };
+                rws.OnClose += (se, ev) =>
+                {
+                    Show(roomListBox);
+                    Hide(roomBox);
+                    joinedRoom = 0;
+                };
+                rws.OnError += (se, ev) =>
+                {
+                    MessageBox.Show("방 웹소켓에서 에러 발생!");
+                    Show(roomListBox);
+                    Hide(roomBox);
+                    joinedRoom = 0;
+                };
+                rws.OnMessage += (se, ev) =>
+                {
+                    wsOnMessage(JObject.Parse(ev.Data));
+                };
+            };
+            var sslProtocolHack = (System.Security.Authentication.SslProtocols)(SSLProtocolHack.TLSv12 | SSLProtocolHack.TLSv11 | SSLProtocolHack.TLS);
+
+            rws.SslConfiguration.EnabledSslProtocols = sslProtocolHack;
+            rws.Connect();
+        }
+
+        private void connectToRoom(int roomNumber) {
+            using (rws = new WebSocket("wss://ws.bfkkutu.kr/g10416/" + sessionId + "&1&" + roomNumber))
+            {
+                rws.OnOpen += (se, ev) =>
+                {
+                    Show(roomBox);
+                    Hide(roomListBox);
+                    joinedRoom = roomNumber;
                 };
                 rws.OnClose += (se, ev) =>
                 {
@@ -562,6 +615,7 @@ namespace BFKKuTuClient
             Clear(userListBox);
             Clear(roomListBox);
             Clear(chatBox);
+            Hide(menuBarPanel);
         }
 
         private void Chat(String _profile, String value, String from, String timestamp) {
@@ -584,6 +638,32 @@ namespace BFKKuTuClient
         private void leaveRoomBtn_Click(object sender, EventArgs e)
         {
             if (rws.ReadyState != WebSocketState.Closed || rws.ReadyState != WebSocketState.Closing) rws.Close();
+            Show(roomListBox);
+            Hide(roomBox);
+            Hide(leaveRoomBtn);
+            updateUI();
+        }
+
+        private void createRoomBtn_Click(object sender, EventArgs e)
+        {
+            CreateRoomDialogForm.Close();
+            CreateRoomDialogForm = new CreateRoomDialog(MODE, JObject.Parse(Const["RULE"].ToString()), JObject.Parse(Const["OPTIONS"].ToString()), Lang, data);
+            CreateRoomDialogForm.Owner = this;
+            CreateRoomDialogForm.Show();
+        }
+
+        private void createRoomHandler(Dictionary<string, string> roomData) {
+            JObject json = new JObject();
+            json["type"] = "enter";
+            json["title"] = roomData["title"];
+            json["password"] = roomData["password"];
+            json["limit"] = roomData["playerLimit"];
+            json["mode"] = roomData["mode"];
+            json["round"] = roomData["round"];
+            json["wordLimit"] = "3"; // TEMPORARY
+            json["time"] = roomData["roundTime"];
+            json["opts"] = JObject.Parse(roomData["opts"]);
+            ws.Send(json.ToString());
         }
 
         delegate void SetTextCallback(dynamic label, string text);
@@ -712,7 +792,8 @@ namespace BFKKuTuClient
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            if (wsConnected) {
+            if (wsConnected)
+            {
                 var confirmResult = MessageBox.Show("서버에 연결되어 있습니다.\n접속을 종료하고 클라이언트를 닫으시겠습니까?", "BF끄투 - 종료", MessageBoxButtons.YesNo);
                 if (confirmResult == DialogResult.Yes)
                 {
@@ -722,9 +803,73 @@ namespace BFKKuTuClient
             }
             base.OnClosing(e);
         }
+
         private ArrayInstance NewArray<T>(IEnumerable<T> data)
         {
             return engine.Array.New(data.Cast<object>().ToArray());
         }
     }
+
+    public class PlaceHolderTextBox : TextBox
+    {
+
+        bool isPlaceHolder = true;
+        string _placeHolderText;
+        public string PlaceHolderText
+        {
+            get { return _placeHolderText; }
+            set
+            {
+                _placeHolderText = value;
+                setPlaceholder();
+            }
+        }
+
+        public new string Text
+        {
+            get => isPlaceHolder ? string.Empty : base.Text;
+            set => base.Text = value;
+        }
+
+        //when the control loses focus, the placeholder is shown
+        private void setPlaceholder()
+        {
+            if (string.IsNullOrEmpty(base.Text))
+            {
+                base.Text = PlaceHolderText;
+                this.ForeColor = Color.Gray;
+                this.Font = new Font(this.Font, FontStyle.Italic);
+                isPlaceHolder = true;
+            }
+        }
+
+        //when the control is focused, the placeholder is removed
+        private void removePlaceHolder()
+        {
+
+            if (isPlaceHolder)
+            {
+                base.Text = "";
+                this.ForeColor = System.Drawing.SystemColors.WindowText;
+                this.Font = new Font(this.Font, FontStyle.Regular);
+                isPlaceHolder = false;
+            }
+        }
+        public PlaceHolderTextBox()
+        {
+            GotFocus += removePlaceHolder;
+            LostFocus += setPlaceholder;
+        }
+
+        private void setPlaceholder(object sender, EventArgs e)
+        {
+            setPlaceholder();
+        }
+
+        private void removePlaceHolder(object sender, EventArgs e)
+        {
+            removePlaceHolder();
+        }
+    }
+
 }

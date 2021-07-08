@@ -16,9 +16,9 @@ namespace BFKKuTuClient
         public static CreateRoomEventHandler CreateRoomEvent;
 
         public string[] MODE = new string[] { };
-        public JObject RULE = JObject.Parse("{}");
-        public JObject OPTIONS = JObject.Parse("{}");
-        public JObject Lang = JObject.Parse("{}");
+        public JObject RULE = new JObject();
+        public JObject OPTIONS = new JObject();
+        public JObject Lang = new JObject();
         public Form1.ClientData user = new Form1.ClientData();
         public string[] roundTimeArray = new string[]{"5", "10", "30", "60", "90", "120", "150", "200", "300"};
         public CreateRoomDialog(string[] MODE, JObject RULE, JObject OPTIONS, JObject Lang, Form1.ClientData user)

@@ -42,9 +42,10 @@ namespace BFKKuTuClient
             this.userListBox = new System.Windows.Forms.Panel();
             this.roomListBox = new System.Windows.Forms.Panel();
             this.roomBox = new System.Windows.Forms.Panel();
+            this.roomUsersBox = new System.Windows.Forms.Panel();
             this.leaveRoomBtn = new System.Windows.Forms.Button();
             this.roomTitleLabel = new System.Windows.Forms.Label();
-            this.moremi0 = new System.Windows.Forms.PictureBox();
+            this.myMoremiPictureBox = new System.Windows.Forms.PictureBox();
             this.myNicknameLabel = new System.Windows.Forms.Label();
             this.myLevelLabel = new System.Windows.Forms.Label();
             this.myLevelImage = new System.Windows.Forms.PictureBox();
@@ -66,9 +67,8 @@ namespace BFKKuTuClient
             this.menuBarPanel = new System.Windows.Forms.Panel();
             this.chatBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.moremiBox)).BeginInit();
-            this.roomListBox.SuspendLayout();
             this.roomBox.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.moremi0)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.myMoremiPictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.myLevelImage)).BeginInit();
             this.myMoremiPanel.SuspendLayout();
             this.menuBarPanel.SuspendLayout();
@@ -167,7 +167,6 @@ namespace BFKKuTuClient
             // 
             // roomListBox
             // 
-            this.roomListBox.Controls.Add(this.roomBox);
             this.roomListBox.Location = new System.Drawing.Point(249, 88);
             this.roomListBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.roomListBox.Name = "roomListBox";
@@ -176,17 +175,25 @@ namespace BFKKuTuClient
             // 
             // roomBox
             // 
+            this.roomBox.Controls.Add(this.roomUsersBox);
             this.roomBox.Controls.Add(this.leaveRoomBtn);
             this.roomBox.Controls.Add(this.roomTitleLabel);
-            this.roomBox.Location = new System.Drawing.Point(1, 0);
+            this.roomBox.Location = new System.Drawing.Point(249, 88);
             this.roomBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.roomBox.Name = "roomBox";
-            this.roomBox.Size = new System.Drawing.Size(557, 360);
+            this.roomBox.Size = new System.Drawing.Size(571, 360);
             this.roomBox.TabIndex = 15;
+            // 
+            // roomUsersBox
+            // 
+            this.roomUsersBox.Location = new System.Drawing.Point(16, 44);
+            this.roomUsersBox.Name = "roomUsersBox";
+            this.roomUsersBox.Size = new System.Drawing.Size(538, 295);
+            this.roomUsersBox.TabIndex = 17;
             // 
             // leaveRoomBtn
             // 
-            this.leaveRoomBtn.Location = new System.Drawing.Point(469, 12);
+            this.leaveRoomBtn.Location = new System.Drawing.Point(467, 8);
             this.leaveRoomBtn.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.leaveRoomBtn.Name = "leaveRoomBtn";
             this.leaveRoomBtn.Size = new System.Drawing.Size(75, 29);
@@ -198,27 +205,28 @@ namespace BFKKuTuClient
             // roomTitleLabel
             // 
             this.roomTitleLabel.AutoSize = true;
-            this.roomTitleLabel.Location = new System.Drawing.Point(14, 12);
+            this.roomTitleLabel.Location = new System.Drawing.Point(17, 15);
             this.roomTitleLabel.Name = "roomTitleLabel";
             this.roomTitleLabel.Size = new System.Drawing.Size(84, 15);
             this.roomTitleLabel.TabIndex = 15;
             this.roomTitleLabel.Text = "　Default Text";
             // 
-            // moremi0
+            // myMoremiPictureBox
             // 
-            this.moremi0.BackColor = System.Drawing.Color.Transparent;
-            this.moremi0.ImageLocation = "https://bfkkutu.kr/img/kkutu/moremi/body.png";
-            this.moremi0.InitialImage = ((System.Drawing.Image)(resources.GetObject("moremi0.InitialImage")));
-            this.moremi0.Location = new System.Drawing.Point(0, 0);
-            this.moremi0.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.moremi0.Name = "moremi0";
-            this.moremi0.Size = new System.Drawing.Size(120, 120);
-            this.moremi0.TabIndex = 16;
-            this.moremi0.TabStop = false;
+            this.myMoremiPictureBox.BackColor = System.Drawing.Color.Transparent;
+            this.myMoremiPictureBox.ImageLocation = "https://bfkkutu.kr/img/kkutu/moremi/body.png";
+            this.myMoremiPictureBox.InitialImage = null;
+            this.myMoremiPictureBox.Location = new System.Drawing.Point(0, 0);
+            this.myMoremiPictureBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.myMoremiPictureBox.Name = "myMoremiPictureBox";
+            this.myMoremiPictureBox.Size = new System.Drawing.Size(120, 120);
+            this.myMoremiPictureBox.TabIndex = 16;
+            this.myMoremiPictureBox.TabStop = false;
             // 
             // myNicknameLabel
             // 
             this.myNicknameLabel.AutoSize = true;
+            this.myNicknameLabel.BackColor = System.Drawing.Color.Transparent;
             this.myNicknameLabel.Font = new System.Drawing.Font("맑은 고딕", 12F);
             this.myNicknameLabel.Location = new System.Drawing.Point(120, 471);
             this.myNicknameLabel.Name = "myNicknameLabel";
@@ -308,7 +316,7 @@ namespace BFKKuTuClient
             // myMoremiPanel
             // 
             this.myMoremiPanel.BackColor = System.Drawing.Color.Transparent;
-            this.myMoremiPanel.Controls.Add(this.moremi0);
+            this.myMoremiPanel.Controls.Add(this.myMoremiPictureBox);
             this.myMoremiPanel.Location = new System.Drawing.Point(14, 535);
             this.myMoremiPanel.Name = "myMoremiPanel";
             this.myMoremiPanel.Size = new System.Drawing.Size(120, 120);
@@ -398,6 +406,7 @@ namespace BFKKuTuClient
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1108, 745);
+            this.Controls.Add(this.myNicknameLabel);
             this.Controls.Add(this.menuBarPanel);
             this.Controls.Add(this.myMoremiPanel);
             this.Controls.Add(this.myOkgLabel);
@@ -409,7 +418,6 @@ namespace BFKKuTuClient
             this.Controls.Add(this.myGlobalWinLabel);
             this.Controls.Add(this.myLevelImage);
             this.Controls.Add(this.myLevelLabel);
-            this.Controls.Add(this.myNicknameLabel);
             this.Controls.Add(this.roomListBox);
             this.Controls.Add(this.userListBox);
             this.Controls.Add(this.toLogin);
@@ -420,6 +428,7 @@ namespace BFKKuTuClient
             this.Controls.Add(this.sendChatBtn);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.moremiBox);
+            this.Controls.Add(this.roomBox);
             this.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -429,10 +438,9 @@ namespace BFKKuTuClient
             this.Text = "KKuTuClient";
             this.chatBox.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.moremiBox)).EndInit();
-            this.roomListBox.ResumeLayout(false);
             this.roomBox.ResumeLayout(false);
             this.roomBox.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.moremi0)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.myMoremiPictureBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.myLevelImage)).EndInit();
             this.myMoremiPanel.ResumeLayout(false);
             this.menuBarPanel.ResumeLayout(false);
@@ -456,7 +464,7 @@ namespace BFKKuTuClient
         private System.Windows.Forms.Label roomTitleLabel;
         private System.Windows.Forms.Panel roomBox;
         private System.Windows.Forms.Button leaveRoomBtn;
-        private System.Windows.Forms.PictureBox moremi0;
+        private System.Windows.Forms.PictureBox myMoremiPictureBox;
         private System.Windows.Forms.Label myNicknameLabel;
         private System.Windows.Forms.Label myLevelLabel;
         private System.Windows.Forms.PictureBox myLevelImage;
@@ -477,6 +485,7 @@ namespace BFKKuTuClient
         private System.Windows.Forms.Button quickBtn;
         private System.Windows.Forms.Button shopBtn;
         private System.Windows.Forms.Panel menuBarPanel;
+        private System.Windows.Forms.Panel roomUsersBox;
     }
 }
 

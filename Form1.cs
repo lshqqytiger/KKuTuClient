@@ -141,6 +141,16 @@ namespace BFKKuTuClient
             Lang = JObject.Parse(Const["lang"].ToString());
             Const.Remove("lang");
             MODE = Const["MODE"].ToObject<string[]>();
+
+            dynamic[] labels = new dynamic[]{ myLevelImage, myNicknameLabel, myGlobalWinLabel, myPingLabel, myRankLabel, myLevelLabel };
+            dynamic newParent = moremiBox;
+
+            foreach (var i in labels)
+            {
+                i.Location = newParent.PointToClient(i.Parent.PointToScreen(i.Location));
+                i.Parent = newParent;
+                i.BackColor = Color.Transparent;
+            }
         }
 
         private dynamic get(string url) {
@@ -293,10 +303,9 @@ namespace BFKKuTuClient
                     connectToRoom(Int16.Parse(res["id"].ToString()));
                     break;
                 case "room":
-                    Show(roomBox);
-                    Hide(roomListBox);
                     SetText(roomTitleLabel, "[" + res["room"]["id"].ToString() + "] " + res["room"]["title"].ToString());
-                    updateUI();
+                    data.rooms[res["room"]["id"].ToString()] = res["room"];
+                    updateRoom();
                     break;
                 case "roomStuck":
                     MessageBox.Show("roomStuck");
@@ -328,6 +337,8 @@ namespace BFKKuTuClient
         }
 
         private void updateRoom() {
+            Show(roomBox);
+            Hide(roomListBox);
             JToken room = data.rooms[joinedRoom.ToString()];
             int count = 0;
             foreach (JToken i in room["players"]) {
@@ -340,11 +351,11 @@ namespace BFKKuTuClient
                 panel.Size = new Size(120, 140);
                 panel.Location = new Point(120 * count, 0);
                 label.Name = "userNicknameLabel" + count;
-                label.Location = new Point(120 * count, 121);
+                label.Location = new Point(0, 121);
                 label.Text = user["nickname"].ToString();
                 moremi.Name = "userMoremiPictureBox" + count;
                 moremi.Image = renderMoremi(user["equip"]);
-                moremi.Location = new Point(120 * count, 1);
+                moremi.Location = new Point(0, 1);
                 moremi.Size = new Size(120, 120);
                 label.Parent = panel;
                 moremi.Parent = panel;
@@ -438,6 +449,7 @@ namespace BFKKuTuClient
                 user.MaximumSize = new Size(166, 20);
                 user.Size = new Size(166, 20);
                 user.Location = new Point(0, 20 * userCount);
+                user.BackColor = Color.Transparent;
                 AppendLabel(userListBox, user);
                 userCount++;
             }
@@ -448,6 +460,7 @@ namespace BFKKuTuClient
             userListTitle.MaximumSize = new Size(166, 20);
             userListTitle.Size = new Size(166, 20);
             userListTitle.Location = new Point(0, 0);
+            userListTitle.BackColor = Color.Transparent;
             AppendLabel(userListBox, userListTitle);
         }
 
@@ -461,6 +474,7 @@ namespace BFKKuTuClient
                 roomTitle.Text = (string)i.Value["title"];
                 roomTitle.AutoSize = true;
                 roomTitle.Location = new Point(0, 0);
+                roomTitle.BackColor = Color.Transparent;
                 AppendLabel(room, roomTitle);
 
                 room.Name = "room" + i.Key;
@@ -470,6 +484,7 @@ namespace BFKKuTuClient
                 room.Location = new Point(1+272*(roomCount%2), 20+60 * (int)Math.Round((double)(roomCount / 2)));
                 room.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
                 room.BackgroundImage = Image.FromFile(@"resources\ui\272_60.png");
+                room.BackColor = Color.Transparent;
                 room.Click += (se, ev) =>
                 {
                     connectToRoomThroughList(i);
@@ -484,6 +499,7 @@ namespace BFKKuTuClient
             roomListTitle.MaximumSize = new Size(186, 20);
             roomListTitle.Size = new Size(186, 20);
             roomListTitle.Location = new Point(0, 0);
+            roomListTitle.BackColor = Color.Transparent;
             AppendLabel(roomListBox, roomListTitle);
         }
 
@@ -655,7 +671,7 @@ namespace BFKKuTuClient
 
         private void disconnect() {
             if (wsConnected) ws.Close();
-            if (rws.ReadyState != WebSocketState.Closed || rws.ReadyState != WebSocketState.Closing) rws.Close();
+            if (rws.ReadyState != WebSocketState.Closed && rws.ReadyState != WebSocketState.Closing) rws.Close();
             Clear(userListBox);
             Clear(roomListBox);
             Clear(chatBox);
@@ -673,16 +689,18 @@ namespace BFKKuTuClient
             chat.Text = profile["name"]+": "+value;
             chat.AutoSize = true;
             chat.Parent = panel;
+            chat.BackColor = Color.Transparent;
             panel.MaximumSize = new Size(384, 20);
             panel.Size = new Size(384, 20);
             panel.Location = new Point(0, 20*chatCount);
+            panel.BackColor = Color.Transparent;
             AppendPanel(chatBox, panel);
             chatCount++;
         }
 
         private void leaveRoomBtn_Click(object sender, EventArgs e)
         {
-            if (rws.ReadyState != WebSocketState.Closed || rws.ReadyState != WebSocketState.Closing) rws.Close();
+            if (rws.ReadyState != WebSocketState.Closed && rws.ReadyState != WebSocketState.Closing) rws.Close();
             updateUI();
         }
 

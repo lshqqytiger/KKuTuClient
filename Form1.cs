@@ -61,6 +61,28 @@ namespace BFKKuTuClient
         public JObject Lang = new JObject();
         public string path = Directory.GetCurrentDirectory();
         public string[] MODE;
+        public static ImprovedButton helpBtn = new ImprovedButton("help", "도움말");
+        public static ImprovedButton settingsBtn = new ImprovedButton("settings", "설정");
+        public static ImprovedButton friendsBtn = new ImprovedButton("friends", "친구 목록");
+        public static ImprovedButton inquireBtn = new ImprovedButton("inquire", "문의");
+        public static ImprovedButton rankingBtn = new ImprovedButton("ranking", "랭킹");
+        public static ImprovedButton newRoomBtn = new ImprovedButton("newRoom", "방 만들기");
+        public static ImprovedButton quickBtn = new ImprovedButton("quick", "빠른 입장");
+        public static ImprovedButton shopBtn = new ImprovedButton("shop", "상점");
+        public static ImprovedButton dictionaryBtn = new ImprovedButton("dictionary", "사전");
+        public static ImprovedButton replayBtn = new ImprovedButton("replay", "리플레이");
+        public static ImprovedButton clanBtn = new ImprovedButton("clan", "클랜");
+        public static ImprovedButton reloadBtn = new ImprovedButton("reload", "새로고침");
+        public static ImprovedButton spectateBtn = new ImprovedButton("spectate", "관전");
+        public static ImprovedButton setRoomBtn = new ImprovedButton("setRoom", "방 설정");
+        public static ImprovedButton inviteBtn = new ImprovedButton("invite", "초대");
+        public static ImprovedButton practiceBtn = new ImprovedButton("practice", "연습");
+        public static ImprovedButton startBtn = new ImprovedButton("start", "시작");
+        public static ImprovedButton readyBtn = new ImprovedButton("ready", "준비");
+        public ImprovedButton[] menuButtonsForLobby = new ImprovedButton[] { helpBtn, settingsBtn, friendsBtn, inquireBtn, rankingBtn, newRoomBtn, quickBtn, shopBtn, dictionaryBtn, replayBtn, clanBtn, reloadBtn };
+        public ImprovedButton[] menuButtonsForMaster = new ImprovedButton[] { helpBtn, settingsBtn, friendsBtn, inquireBtn, spectateBtn, setRoomBtn, dictionaryBtn, inviteBtn, practiceBtn, startBtn };
+        public ImprovedButton[] menuButtonsForNormal = new ImprovedButton[] { helpBtn, settingsBtn, friendsBtn, inquireBtn, spectateBtn, dictionaryBtn, practiceBtn, readyBtn };
+        public ImprovedButton[] menuButtonsForGaming = new ImprovedButton[] { helpBtn, settingsBtn, friendsBtn, inquireBtn, dictionaryBtn };
 
         private enum SSLProtocolHack
         {
@@ -142,7 +164,7 @@ namespace BFKKuTuClient
             Const.Remove("lang");
             MODE = Const["MODE"].ToObject<string[]>();
 
-            dynamic[] labels = new dynamic[]{ myLevelImage, myNicknameLabel, myGlobalWinLabel, myPingLabel, myRankLabel, myLevelLabel };
+            dynamic[] labels = new dynamic[] { myLevelImage, myNicknameLabel, myGlobalWinLabel, myPingLabel, myRankLabel, myLevelLabel };
             dynamic newParent = moremiBox;
 
             foreach (var i in labels)
@@ -150,6 +172,97 @@ namespace BFKKuTuClient
                 i.Location = newParent.PointToClient(i.Parent.PointToScreen(i.Location));
                 i.Parent = newParent;
                 i.BackColor = Color.Transparent;
+            }
+            foreach (ImprovedButton i in menuButtonsForLobby)
+            {
+                i.Click += (se, ev) =>
+                {
+                    menuButtonClicked(i.id);
+                };
+            }
+            foreach (ImprovedButton i in menuButtonsForMaster)
+            {
+                i.Click += (se, ev) =>
+                {
+                    menuButtonClicked(i.id);
+                };
+            }
+            foreach (ImprovedButton i in menuButtonsForGaming)
+            {
+                i.Click += (se, ev) =>
+                {
+                    menuButtonClicked(i.id);
+                };
+            }
+            foreach (ImprovedButton i in menuButtonsForNormal)
+            {
+                i.Click += (se, ev) =>
+                {
+                    menuButtonClicked(i.id);
+                };
+            }
+        }
+
+        public class ImprovedButton : Button
+        {
+            public string id;
+            public ImprovedButton(string id, string text)
+            {
+                this.id = id;
+                Name = id + "Btn";
+                Text = text;
+            }
+        }
+
+        private void menuButtonClicked(string type) {
+            switch (type)
+            {
+                case "newRoom":
+                    CreateRoomDialogForm.Close();
+                    CreateRoomDialogForm = new CreateRoomDialog(MODE, JObject.Parse(Const["RULE"].ToString()), JObject.Parse(Const["OPTIONS"].ToString()), Lang, data);
+                    CreateRoomDialogForm.Owner = this;
+                    CreateRoomDialogForm.Show();
+                    break;
+                default:
+                    MessageBox.Show("there's no event listener for button "+type);
+                    break;
+            }
+        }
+
+        private void setupMenuButtons()
+        {
+            Clear(menuBarPanel);
+            int count = 0;
+            void appendButton(ImprovedButton i) {
+                SetLocation(i, new Point(count * 75, 5));
+                AppendDynamic(menuBarPanel, i);
+                count++;
+            }
+            if (joinedRoom == 0)
+            {
+                foreach (ImprovedButton i in menuButtonsForLobby)
+                {
+                    appendButton(i);
+                }
+            }else if (data.gaming)
+            {
+                foreach (ImprovedButton i in menuButtonsForGaming)
+                {
+                    appendButton(i);
+                }
+            }else if (data.rooms[joinedRoom.ToString()]["master"].ToString() == data.id)
+            {
+                foreach (ImprovedButton i in menuButtonsForMaster)
+                {
+                    appendButton(i);
+                }
+            }
+            else
+            {
+                foreach (ImprovedButton i in menuButtonsForNormal)
+                {
+                    appendButton(i);
+                }
             }
         }
 
@@ -334,9 +447,11 @@ namespace BFKKuTuClient
             updateRoomList();
             myMoremiPictureBox.Image = renderMoremi(data.users[data.id]["equip"]);
             updateMe();
+            setupMenuButtons();
         }
 
         private void updateRoom() {
+            if (joinedRoom == 0) return;
             Show(roomBox);
             Hide(roomListBox);
             JToken room = data.rooms[joinedRoom.ToString()];
@@ -349,7 +464,7 @@ namespace BFKKuTuClient
                 PictureBox moremi = new PictureBox();
                 panel.Name = "userPanel" + count;
                 panel.Size = new Size(120, 140);
-                panel.Location = new Point(120 * count, 0);
+                panel.Location = new Point(120 * count, 140*(int)Math.Round((double)(count / 4)));
                 label.Name = "userNicknameLabel" + count;
                 label.Location = new Point(0, 121);
                 label.Text = user["nickname"].ToString();
@@ -650,7 +765,7 @@ namespace BFKKuTuClient
             pw = _pw;
             sessionId = data[0];
             toLogin.Text = data[1];
-            toLogin.Location = new Point(1055 - data[1].Length*6, 9);
+            toLogin.Location = new Point(1110 - data[1].Length*6, 11);
             toLogin.Click -= toLoginForm;
             toLogin.Click += logout;
         }
@@ -663,7 +778,7 @@ namespace BFKKuTuClient
                 pw = String.Empty;
                 sessionId = String.Empty;
                 toLogin.Text = "로그인";
-                toLogin.Location = new Point(1055, 9);
+                toLogin.Location = new Point(1110, 11);
                 toLogin.Click += toLoginForm;
                 toLogin.Click -= logout;
             }
@@ -704,14 +819,6 @@ namespace BFKKuTuClient
             updateUI();
         }
 
-        private void createRoomBtn_Click(object sender, EventArgs e)
-        {
-            CreateRoomDialogForm.Close();
-            CreateRoomDialogForm = new CreateRoomDialog(MODE, JObject.Parse(Const["RULE"].ToString()), JObject.Parse(Const["OPTIONS"].ToString()), Lang, data);
-            CreateRoomDialogForm.Owner = this;
-            CreateRoomDialogForm.Show();
-        }
-
         private void createRoomHandler(Dictionary<string, string> roomData) {
             JObject json = new JObject();
             json["title"] = roomData["title"];
@@ -734,6 +841,7 @@ namespace BFKKuTuClient
         delegate void ClearPanelCallback(Panel panel);
         delegate void DynamicShowCallback(dynamic element);
         delegate void DynamicHideCallback(dynamic element);
+        delegate void SetLocationCallback(dynamic element, Point location);
 
         private void SetText(dynamic label, string text)
         {
@@ -745,6 +853,19 @@ namespace BFKKuTuClient
             else
             {
                 label.Text = text;
+            }
+        }
+
+        private void SetLocation(dynamic element, Point location)
+        {
+            if (element.InvokeRequired)
+            {
+                SetLocationCallback d = new SetLocationCallback(SetLocation);
+                this.Invoke(d, new object[] { element, location });
+            }
+            else
+            {
+                element.Location = location;
             }
         }
 

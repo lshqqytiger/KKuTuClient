@@ -57,13 +57,6 @@ namespace BFKKuTuClient
             this.myOkgLabel = new System.Windows.Forms.Label();
             this.myOkgProgressBar = new System.Windows.Forms.ProgressBar();
             this.myMoremiPanel = new System.Windows.Forms.Panel();
-            this.guideBtn = new System.Windows.Forms.Button();
-            this.settingBtn = new System.Windows.Forms.Button();
-            this.friendBtn = new System.Windows.Forms.Button();
-            this.leaderboardBtn = new System.Windows.Forms.Button();
-            this.createRoomBtn = new System.Windows.Forms.Button();
-            this.quickBtn = new System.Windows.Forms.Button();
-            this.shopBtn = new System.Windows.Forms.Button();
             this.menuBarPanel = new System.Windows.Forms.Panel();
             this.chatBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.moremiBox)).BeginInit();
@@ -71,13 +64,12 @@ namespace BFKKuTuClient
             ((System.ComponentModel.ISupportInitialize)(this.myMoremiPictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.myLevelImage)).BeginInit();
             this.myMoremiPanel.SuspendLayout();
-            this.menuBarPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(247, 685);
+            this.label1.Location = new System.Drawing.Point(279, 685);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(32, 15);
             this.label1.TabIndex = 0;
@@ -85,7 +77,7 @@ namespace BFKKuTuClient
             // 
             // sendChatBtn
             // 
-            this.sendChatBtn.Location = new System.Drawing.Point(732, 701);
+            this.sendChatBtn.Location = new System.Drawing.Point(1078, 700);
             this.sendChatBtn.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.sendChatBtn.Name = "sendChatBtn";
             this.sendChatBtn.Size = new System.Drawing.Size(75, 29);
@@ -96,10 +88,10 @@ namespace BFKKuTuClient
             // 
             // chatinput
             // 
-            this.chatinput.Location = new System.Drawing.Point(249, 704);
+            this.chatinput.Location = new System.Drawing.Point(281, 704);
             this.chatinput.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.chatinput.Name = "chatinput";
-            this.chatinput.Size = new System.Drawing.Size(477, 23);
+            this.chatinput.Size = new System.Drawing.Size(791, 23);
             this.chatinput.TabIndex = 2;
             // 
             // connectBtn
@@ -125,10 +117,10 @@ namespace BFKKuTuClient
             // chatBox
             // 
             this.chatBox.Controls.Add(this.progressBar1);
-            this.chatBox.Location = new System.Drawing.Point(249, 456);
+            this.chatBox.Location = new System.Drawing.Point(281, 456);
             this.chatBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.chatBox.Name = "chatBox";
-            this.chatBox.Size = new System.Drawing.Size(558, 225);
+            this.chatBox.Size = new System.Drawing.Size(872, 225);
             this.chatBox.TabIndex = 5;
             // 
             // progressBar1
@@ -141,7 +133,7 @@ namespace BFKKuTuClient
             // toLogin
             // 
             this.toLogin.AutoSize = true;
-            this.toLogin.Location = new System.Drawing.Point(1055, 11);
+            this.toLogin.Location = new System.Drawing.Point(1110, 11);
             this.toLogin.Name = "toLogin";
             this.toLogin.Size = new System.Drawing.Size(43, 15);
             this.toLogin.TabIndex = 11;
@@ -153,7 +145,7 @@ namespace BFKKuTuClient
             this.moremiBox.Location = new System.Drawing.Point(14, 456);
             this.moremiBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.moremiBox.Name = "moremiBox";
-            this.moremiBox.Size = new System.Drawing.Size(227, 274);
+            this.moremiBox.Size = new System.Drawing.Size(261, 274);
             this.moremiBox.TabIndex = 12;
             this.moremiBox.TabStop = false;
             // 
@@ -162,15 +154,15 @@ namespace BFKKuTuClient
             this.userListBox.Location = new System.Drawing.Point(14, 88);
             this.userListBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.userListBox.Name = "userListBox";
-            this.userListBox.Size = new System.Drawing.Size(227, 360);
+            this.userListBox.Size = new System.Drawing.Size(261, 360);
             this.userListBox.TabIndex = 13;
             // 
             // roomListBox
             // 
-            this.roomListBox.Location = new System.Drawing.Point(249, 88);
+            this.roomListBox.Location = new System.Drawing.Point(281, 88);
             this.roomListBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.roomListBox.Name = "roomListBox";
-            this.roomListBox.Size = new System.Drawing.Size(558, 360);
+            this.roomListBox.Size = new System.Drawing.Size(872, 360);
             this.roomListBox.TabIndex = 14;
             // 
             // roomBox
@@ -178,10 +170,10 @@ namespace BFKKuTuClient
             this.roomBox.Controls.Add(this.roomUsersBox);
             this.roomBox.Controls.Add(this.leaveRoomBtn);
             this.roomBox.Controls.Add(this.roomTitleLabel);
-            this.roomBox.Location = new System.Drawing.Point(249, 88);
+            this.roomBox.Location = new System.Drawing.Point(281, 88);
             this.roomBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.roomBox.Name = "roomBox";
-            this.roomBox.Size = new System.Drawing.Size(571, 360);
+            this.roomBox.Size = new System.Drawing.Size(872, 360);
             this.roomBox.TabIndex = 15;
             // 
             // roomUsersBox
@@ -228,7 +220,7 @@ namespace BFKKuTuClient
             this.myNicknameLabel.AutoSize = true;
             this.myNicknameLabel.BackColor = System.Drawing.Color.Transparent;
             this.myNicknameLabel.Font = new System.Drawing.Font("맑은 고딕", 12F);
-            this.myNicknameLabel.Location = new System.Drawing.Point(120, 471);
+            this.myNicknameLabel.Location = new System.Drawing.Point(134, 471);
             this.myNicknameLabel.Name = "myNicknameLabel";
             this.myNicknameLabel.Size = new System.Drawing.Size(58, 21);
             this.myNicknameLabel.TabIndex = 17;
@@ -238,7 +230,7 @@ namespace BFKKuTuClient
             // 
             this.myLevelLabel.AutoSize = true;
             this.myLevelLabel.Font = new System.Drawing.Font("맑은 고딕", 12F);
-            this.myLevelLabel.Location = new System.Drawing.Point(99, 672);
+            this.myLevelLabel.Location = new System.Drawing.Point(111, 670);
             this.myLevelLabel.Name = "myLevelLabel";
             this.myLevelLabel.Size = new System.Drawing.Size(57, 21);
             this.myLevelLabel.TabIndex = 18;
@@ -257,7 +249,7 @@ namespace BFKKuTuClient
             // myGlobalWinLabel
             // 
             this.myGlobalWinLabel.AutoSize = true;
-            this.myGlobalWinLabel.Location = new System.Drawing.Point(121, 507);
+            this.myGlobalWinLabel.Location = new System.Drawing.Point(138, 507);
             this.myGlobalWinLabel.Name = "myGlobalWinLabel";
             this.myGlobalWinLabel.Size = new System.Drawing.Size(54, 15);
             this.myGlobalWinLabel.TabIndex = 20;
@@ -267,13 +259,13 @@ namespace BFKKuTuClient
             // 
             this.myLevelProgressBar.Location = new System.Drawing.Point(14, 701);
             this.myLevelProgressBar.Name = "myLevelProgressBar";
-            this.myLevelProgressBar.Size = new System.Drawing.Size(227, 23);
+            this.myLevelProgressBar.Size = new System.Drawing.Size(261, 23);
             this.myLevelProgressBar.TabIndex = 21;
             // 
             // myLevelProgressLabel
             // 
             this.myLevelProgressLabel.AutoSize = true;
-            this.myLevelProgressLabel.Location = new System.Drawing.Point(112, 704);
+            this.myLevelProgressLabel.Location = new System.Drawing.Point(134, 704);
             this.myLevelProgressLabel.Name = "myLevelProgressLabel";
             this.myLevelProgressLabel.Size = new System.Drawing.Size(34, 15);
             this.myLevelProgressLabel.TabIndex = 22;
@@ -282,7 +274,7 @@ namespace BFKKuTuClient
             // myPingLabel
             // 
             this.myPingLabel.AutoSize = true;
-            this.myPingLabel.Location = new System.Drawing.Point(141, 538);
+            this.myPingLabel.Location = new System.Drawing.Point(151, 535);
             this.myPingLabel.Name = "myPingLabel";
             this.myPingLabel.Size = new System.Drawing.Size(26, 15);
             this.myPingLabel.TabIndex = 23;
@@ -291,7 +283,7 @@ namespace BFKKuTuClient
             // myRankLabel
             // 
             this.myRankLabel.AutoSize = true;
-            this.myRankLabel.Location = new System.Drawing.Point(140, 562);
+            this.myRankLabel.Location = new System.Drawing.Point(151, 562);
             this.myRankLabel.Name = "myRankLabel";
             this.myRankLabel.Size = new System.Drawing.Size(90, 15);
             this.myRankLabel.TabIndex = 24;
@@ -300,7 +292,7 @@ namespace BFKKuTuClient
             // myOkgLabel
             // 
             this.myOkgLabel.AutoSize = true;
-            this.myOkgLabel.Location = new System.Drawing.Point(172, 640);
+            this.myOkgLabel.Location = new System.Drawing.Point(183, 640);
             this.myOkgLabel.Name = "myOkgLabel";
             this.myOkgLabel.Size = new System.Drawing.Size(26, 15);
             this.myOkgLabel.TabIndex = 26;
@@ -310,7 +302,7 @@ namespace BFKKuTuClient
             // 
             this.myOkgProgressBar.Location = new System.Drawing.Point(141, 635);
             this.myOkgProgressBar.Name = "myOkgProgressBar";
-            this.myOkgProgressBar.Size = new System.Drawing.Size(89, 23);
+            this.myOkgProgressBar.Size = new System.Drawing.Size(119, 23);
             this.myOkgProgressBar.TabIndex = 25;
             // 
             // myMoremiPanel
@@ -322,82 +314,11 @@ namespace BFKKuTuClient
             this.myMoremiPanel.Size = new System.Drawing.Size(120, 120);
             this.myMoremiPanel.TabIndex = 27;
             // 
-            // guideBtn
-            // 
-            this.guideBtn.Location = new System.Drawing.Point(3, 3);
-            this.guideBtn.Name = "guideBtn";
-            this.guideBtn.Size = new System.Drawing.Size(75, 23);
-            this.guideBtn.TabIndex = 28;
-            this.guideBtn.Text = "도움말";
-            this.guideBtn.UseVisualStyleBackColor = true;
-            // 
-            // settingBtn
-            // 
-            this.settingBtn.Location = new System.Drawing.Point(72, 3);
-            this.settingBtn.Name = "settingBtn";
-            this.settingBtn.Size = new System.Drawing.Size(75, 23);
-            this.settingBtn.TabIndex = 29;
-            this.settingBtn.Text = "설정";
-            this.settingBtn.UseVisualStyleBackColor = true;
-            // 
-            // friendBtn
-            // 
-            this.friendBtn.Location = new System.Drawing.Point(144, 3);
-            this.friendBtn.Name = "friendBtn";
-            this.friendBtn.Size = new System.Drawing.Size(75, 23);
-            this.friendBtn.TabIndex = 30;
-            this.friendBtn.Text = "친구 목록";
-            this.friendBtn.UseVisualStyleBackColor = true;
-            // 
-            // leaderboardBtn
-            // 
-            this.leaderboardBtn.Location = new System.Drawing.Point(213, 3);
-            this.leaderboardBtn.Name = "leaderboardBtn";
-            this.leaderboardBtn.Size = new System.Drawing.Size(75, 23);
-            this.leaderboardBtn.TabIndex = 31;
-            this.leaderboardBtn.Text = "랭킹";
-            this.leaderboardBtn.UseVisualStyleBackColor = true;
-            // 
-            // createRoomBtn
-            // 
-            this.createRoomBtn.Location = new System.Drawing.Point(282, 3);
-            this.createRoomBtn.Name = "createRoomBtn";
-            this.createRoomBtn.Size = new System.Drawing.Size(75, 23);
-            this.createRoomBtn.TabIndex = 32;
-            this.createRoomBtn.Text = "방 만들기";
-            this.createRoomBtn.UseVisualStyleBackColor = true;
-            this.createRoomBtn.Click += new System.EventHandler(this.createRoomBtn_Click);
-            // 
-            // quickBtn
-            // 
-            this.quickBtn.Location = new System.Drawing.Point(352, 3);
-            this.quickBtn.Name = "quickBtn";
-            this.quickBtn.Size = new System.Drawing.Size(75, 23);
-            this.quickBtn.TabIndex = 33;
-            this.quickBtn.Text = "빠른 입장";
-            this.quickBtn.UseVisualStyleBackColor = true;
-            // 
-            // shopBtn
-            // 
-            this.shopBtn.Location = new System.Drawing.Point(423, 3);
-            this.shopBtn.Name = "shopBtn";
-            this.shopBtn.Size = new System.Drawing.Size(75, 23);
-            this.shopBtn.TabIndex = 34;
-            this.shopBtn.Text = "상점";
-            this.shopBtn.UseVisualStyleBackColor = true;
-            // 
             // menuBarPanel
             // 
-            this.menuBarPanel.Controls.Add(this.shopBtn);
-            this.menuBarPanel.Controls.Add(this.guideBtn);
-            this.menuBarPanel.Controls.Add(this.quickBtn);
-            this.menuBarPanel.Controls.Add(this.settingBtn);
-            this.menuBarPanel.Controls.Add(this.createRoomBtn);
-            this.menuBarPanel.Controls.Add(this.friendBtn);
-            this.menuBarPanel.Controls.Add(this.leaderboardBtn);
-            this.menuBarPanel.Location = new System.Drawing.Point(249, 49);
+            this.menuBarPanel.Location = new System.Drawing.Point(186, 49);
             this.menuBarPanel.Name = "menuBarPanel";
-            this.menuBarPanel.Size = new System.Drawing.Size(558, 28);
+            this.menuBarPanel.Size = new System.Drawing.Size(967, 28);
             this.menuBarPanel.TabIndex = 35;
             this.menuBarPanel.Visible = false;
             // 
@@ -405,7 +326,7 @@ namespace BFKKuTuClient
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1108, 745);
+            this.ClientSize = new System.Drawing.Size(1165, 745);
             this.Controls.Add(this.myNicknameLabel);
             this.Controls.Add(this.menuBarPanel);
             this.Controls.Add(this.myMoremiPanel);
@@ -443,7 +364,6 @@ namespace BFKKuTuClient
             ((System.ComponentModel.ISupportInitialize)(this.myMoremiPictureBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.myLevelImage)).EndInit();
             this.myMoremiPanel.ResumeLayout(false);
-            this.menuBarPanel.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -477,13 +397,6 @@ namespace BFKKuTuClient
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.ProgressBar myOkgProgressBar;
         private System.Windows.Forms.Panel myMoremiPanel;
-        private System.Windows.Forms.Button guideBtn;
-        private System.Windows.Forms.Button settingBtn;
-        private System.Windows.Forms.Button friendBtn;
-        private System.Windows.Forms.Button leaderboardBtn;
-        private System.Windows.Forms.Button createRoomBtn;
-        private System.Windows.Forms.Button quickBtn;
-        private System.Windows.Forms.Button shopBtn;
         private System.Windows.Forms.Panel menuBarPanel;
         private System.Windows.Forms.Panel roomUsersBox;
     }

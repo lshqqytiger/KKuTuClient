@@ -45,6 +45,11 @@ namespace BFKKuTuClient
             int count = 0;
             foreach (string i in RULE[MODE[modeComboBox.SelectedIndex]]["opts"].ToObject<string[]>()) {
                 if (i == "upl") continue;
+                if (i == "ijp")
+                {
+                    // ijp handling
+                    continue;
+                }
                 if (OPTIONS[i].ToString() == "tmnt" && !user.admin) continue;
                 CheckBox checkBox = new CheckBox();
                 checkBox.AutoSize = true;

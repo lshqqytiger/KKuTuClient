@@ -164,15 +164,24 @@ namespace BFKKuTuClient
             Const.Remove("lang");
             MODE = Const["MODE"].ToObject<string[]>();
 
-            dynamic[] labels = new dynamic[] { myLevelImage, myNicknameLabel, myGlobalWinLabel, myPingLabel, myRankLabel, myLevelLabel };
-            dynamic newParent = moremiBox;
-
-            foreach (var i in labels)
+            dynamic[] moremiBoxChildren = new dynamic[] { myLevelImage, myNicknameLabel, myGlobalWinLabel, myPingLabel, myRankLabel, myLevelLabel };
+            dynamic moremiBoxParent = moremiBox;
+            foreach (var i in moremiBoxChildren)
             {
-                i.Location = newParent.PointToClient(i.Parent.PointToScreen(i.Location));
-                i.Parent = newParent;
+                i.Location = moremiBoxParent.PointToClient(i.Parent.PointToScreen(i.Location));
+                i.Parent = moremiBoxParent;
                 i.BackColor = Color.Transparent;
             }
+
+            dynamic[] roomBoxChildren = new dynamic[] { roomTeamBox, roomUsersBox, roomTitleLabel, roomInfoLabel };
+            dynamic roomBoxParent = roomBox;
+            foreach (var i in roomBoxChildren)
+            {
+                i.Location = roomBoxParent.PointToClient(i.Parent.PointToScreen(i.Location));
+                i.Parent = roomBoxParent;
+                i.BackColor = Color.Transparent;
+            }
+
             foreach (ImprovedButton i in menuButtonsForLobby)
             {
                 i.Click += (se, ev) =>
@@ -222,6 +231,9 @@ namespace BFKKuTuClient
                     CreateRoomDialogForm = new CreateRoomDialog(MODE, JObject.Parse(Const["RULE"].ToString()), JObject.Parse(Const["OPTIONS"].ToString()), Lang, data);
                     CreateRoomDialogForm.Owner = this;
                     CreateRoomDialogForm.Show();
+                    break;
+                case "reload":
+                    send("reloadData");
                     break;
                 default:
                     MessageBox.Show("there's no event listener for button "+type);
@@ -456,24 +468,30 @@ namespace BFKKuTuClient
             Hide(roomListBox);
             JToken room = data.rooms[joinedRoom.ToString()];
             int count = 0;
+            SetText(roomInfoLabel, Lang["mode"+MODE[Int16.Parse(room["mode"].ToString())]].ToString()+"  참여자 "+room["players"].ToObject<string[]>().Length+" / "+room["limit"].ToString()+"  라운드 "+room["round"].ToString()+"  "+room["time"].ToString()+"초");
             foreach (JToken i in room["players"]) {
                 JToken user = data.users[i.ToString()];
                 MessageBox.Show(user.ToString());
                 Panel panel = new Panel();
                 Label label = new Label();
                 PictureBox moremi = new PictureBox();
+                PictureBox levelImage = new PictureBox();
                 panel.Name = "userPanel" + count;
-                panel.Size = new Size(120, 140);
-                panel.Location = new Point(120 * count, 140*(int)Math.Round((double)(count / 4)));
+                panel.Size = new Size(165, 180);
+                panel.Location = new Point(165 * count, 180*(int)Math.Round((double)(count / 4)));
                 label.Name = "userNicknameLabel" + count;
-                label.Location = new Point(0, 121);
+                label.Location = new Point(40, 120);
                 label.Text = user["nickname"].ToString();
                 moremi.Name = "userMoremiPictureBox" + count;
                 moremi.Image = renderMoremi(user["equip"]);
                 moremi.Location = new Point(0, 1);
                 moremi.Size = new Size(120, 120);
-                label.Parent = panel;
+                levelImage.Image = Image.FromFile(@"resources\kkutu\lv\lv"+ getLevel(user["data"]["score"].ToObject<int>()).ToString().PadLeft(4, '0') +".png");
+                levelImage.Location = new Point(0, 120);
+                levelImage.Size = new Size(40, 40);
                 moremi.Parent = panel;
+                levelImage.Parent = panel;
+                label.Parent = panel;
                 AppendPanel(roomUsersBox, panel);
                 count++;
             }
@@ -597,9 +615,8 @@ namespace BFKKuTuClient
                 room.MaximumSize = new Size(272, 60);
                 room.Size = new Size(272, 60);
                 room.Location = new Point(1+272*(roomCount%2), 20+60 * (int)Math.Round((double)(roomCount / 2)));
-                room.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-                room.BackgroundImage = Image.FromFile(@"resources\ui\272_60.png");
-                room.BackColor = Color.Transparent;
+                room.BorderStyle = BorderStyle.Fixed3D;
+                room.BackgroundImage = Image.FromFile(@"resources\ui\room\cover\"+ (i.Value["gaming"].ToString() == "False" ? "waiting" : "gaming") + ".png");
                 room.Click += (se, ev) =>
                 {
                     connectToRoomThroughList(i);
@@ -830,6 +847,14 @@ namespace BFKKuTuClient
             json["time"] = roomData["roundTime"];
             json["opts"] = JObject.Parse(roomData["opts"]);
             send("enter", json);
+        }
+
+        private void roomTeamBtn_Click(object sender, EventArgs e)
+        {
+            Button clickedButton = sender as Button;
+            JObject value = new JObject();
+            value["value"] = clickedButton.Name.Substring(12);
+            send("team", value);
         }
 
         delegate void SetTextCallback(dynamic label, string text);

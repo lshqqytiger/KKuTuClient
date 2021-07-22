@@ -39,6 +39,7 @@ namespace BFKKuTuClient
             public Boolean gaming = false;
             public JObject box;
             public JObject shop;
+            public bool preQuick = false;
         }
 
         public WebSocket ws = new WebSocket("wss://ws.bfkkutu.kr/g10000/");
@@ -83,6 +84,7 @@ namespace BFKKuTuClient
         public ImprovedButton[] menuButtonsForMaster = new ImprovedButton[] { helpBtn, settingsBtn, friendsBtn, inquireBtn, spectateBtn, setRoomBtn, dictionaryBtn, inviteBtn, practiceBtn, startBtn };
         public ImprovedButton[] menuButtonsForNormal = new ImprovedButton[] { helpBtn, settingsBtn, friendsBtn, inquireBtn, spectateBtn, dictionaryBtn, practiceBtn, readyBtn };
         public ImprovedButton[] menuButtonsForGaming = new ImprovedButton[] { helpBtn, settingsBtn, friendsBtn, inquireBtn, dictionaryBtn };
+        public bool isRelay = false;
 
         private enum SSLProtocolHack
         {
@@ -235,6 +237,12 @@ namespace BFKKuTuClient
                 case "reload":
                     send("reloadData");
                     break;
+                case "ready":
+                    send("ready");
+                    break;
+                case "start":
+                    send("start");
+                    break;
                 default:
                     MessageBox.Show("there's no event listener for button "+type);
                     break;
@@ -290,9 +298,9 @@ namespace BFKKuTuClient
             return response;
         }
 
-        private void send(string type, dynamic obj = null, bool isRws = false)
+        private void send(string type, dynamic obj = null)
         {
-            var target = isRws ? rws : ws;
+            var target = joinedRoom == 0 ? ws : (rws.ReadyState == WebSocketState.Open ? rws : ws);
 
             if(obj is string)
             {
@@ -415,7 +423,7 @@ namespace BFKKuTuClient
                     data.careful = res["careful"].ToString();
                     data.nickname = res["nickname"].ToString();
                     data.exordial = res["exordial"].ToString();
-                    if(!data.gaming) data.users = JObject.Parse(res["users"].ToString());
+                    if(joinedRoom == 0) data.users = JObject.Parse(res["users"].ToString());
                     data.rooms = JObject.Parse(res["rooms"].ToString());
                     data.friends = JObject.Parse(res["friends"].ToString());
                     data._playTime = res["playTime"].ToString();
@@ -428,9 +436,35 @@ namespace BFKKuTuClient
                     connectToRoom(Int16.Parse(res["id"].ToString()));
                     break;
                 case "room":
-                    SetText(roomTitleLabel, "[" + res["room"]["id"].ToString() + "] " + res["room"]["title"].ToString());
-                    data.rooms[res["room"]["id"].ToString()] = res["room"];
-                    updateRoom();
+                    if (joinedRoom != 0)
+                    {
+                        SetText(roomTitleLabel, "[" + res["room"]["id"].ToString() + "] " + res["room"]["title"].ToString());
+                        data.rooms[res["room"]["id"].ToString()] = res["room"];
+                        Show(roomBox);
+                        Hide(roomListBox);
+                        setupMenuButtons();
+                        updateRoom();
+                    }
+                    break;
+                case "connRoom":
+                    if(data.preQuick)
+                    {
+                        // handle quick succeeded
+                    }
+                    if (data.rooms[joinedRoom.ToString()] != null) {
+                        setUser(res["user"]);
+                        updateRoom();
+                    }
+                    break;
+                case "user":
+                    setUser(res);
+                    if(joinedRoom != 0) updateRoom();
+                    break;
+                case "turnStart":
+                    isRelay = data.rooms[joinedRoom.ToString()]["game"]["seq"][int.Parse(res["turn"].ToString())].ToString() == data.id;
+                    break;
+                case "turnEnd":
+                    isRelay = false;
                     break;
                 case "roomStuck":
                     MessageBox.Show("roomStuck");
@@ -439,9 +473,47 @@ namespace BFKKuTuClient
                     MessageBox.Show("오류 발생!: " + res.ToString());
                     break;
                 default:
-                    MessageBox.Show("Unhandled WebSocket Message: " + res.ToString());
+                    MessageBox.Show("Unhandled WebSocket Message "+ res["type"].ToString() + ": " + res.ToString());
                     break;
             }
+        }
+
+        private void setUser(dynamic user = null) {
+            if(user != null)
+            {
+                data.users[user["id"].ToString()] = user;
+            }
+        }
+
+        private void AppendChat(string id, string nickname, string text)
+        {
+            Label titleLabel = new Label();
+            Label chatLabel = new Label();
+            Panel panel = new Panel();
+
+            titleLabel.Name = "chat_"+id+"_title";
+            titleLabel.Text = nickname;
+            titleLabel.Size = new Size(150, 20);
+            titleLabel.Parent = panel;
+            titleLabel.BackColor = Color.Transparent;
+            titleLabel.TextAlign = ContentAlignment.MiddleCenter;
+            chatLabel.Name = "chat_"+id+"_text";
+            chatLabel.Text = text;
+            chatLabel.Parent = panel;
+            chatLabel.BackColor = Color.Transparent;
+            chatLabel.Size = new Size(872, 20);
+            chatLabel.Location = new Point(150, 0);
+            chatLabel.TextAlign = ContentAlignment.MiddleLeft;
+            panel.Size = new Size(872, 20);
+            panel.Location = new Point(0, 20 * chatCount);
+            panel.BackColor = Color.Transparent;
+            AppendPanel(chatBox, panel);
+            chatCount++;
+        }
+
+        private void notice(string text)
+        {
+            AppendChat("notice", "알림", text);
         }
 
         private void updateUI() {
@@ -463,25 +535,39 @@ namespace BFKKuTuClient
         }
 
         private void updateRoom() {
-            if (joinedRoom == 0) return;
-            Show(roomBox);
-            Hide(roomListBox);
+            if (joinedRoom == 0) {
+                Show(roomListBox);
+                Hide(roomBox);
+                return;
+            }
+            Clear(roomUsersBox);
             JToken room = data.rooms[joinedRoom.ToString()];
+            string[] opts = new string[] { };
             int count = 0;
-            SetText(roomInfoLabel, Lang["mode"+MODE[Int16.Parse(room["mode"].ToString())]].ToString()+"  참여자 "+room["players"].ToObject<string[]>().Length+" / "+room["limit"].ToString()+"  라운드 "+room["round"].ToString()+"  "+room["time"].ToString()+"초");
+            foreach(JProperty i in room["opts"])
+            {
+                if (i.Value.ToString() == "True") {
+                    Array.Resize(ref opts, opts.Length + 1);
+                    opts[opts.GetUpperBound(0)] = Lang[i.Name].ToString();
+                }
+            }
+            SetText(roomInfoLabel, Lang["mode"+MODE[Int16.Parse(room["mode"].ToString())]].ToString() + " / " + string.Join(" / ", opts) +"  참여자 "+room["players"].ToObject<string[]>().Length+" / "+room["limit"].ToString()+"  라운드 "+room["round"].ToString()+"  "+room["time"].ToString()+"초");
             foreach (JToken i in room["players"]) {
                 JToken user = data.users[i.ToString()];
-                MessageBox.Show(user.ToString());
                 Panel panel = new Panel();
-                Label label = new Label();
+                Label nicknameLabel = new Label();
+                Label statusLabel = new Label();
                 PictureBox moremi = new PictureBox();
                 PictureBox levelImage = new PictureBox();
                 panel.Name = "userPanel" + count;
                 panel.Size = new Size(165, 180);
                 panel.Location = new Point(165 * count, 180*(int)Math.Round((double)(count / 4)));
-                label.Name = "userNicknameLabel" + count;
-                label.Location = new Point(40, 120);
-                label.Text = user["nickname"].ToString();
+                nicknameLabel.Name = "userNicknameLabel" + count;
+                nicknameLabel.Location = new Point(40, 120);
+                nicknameLabel.Text = user["nickname"].ToString();
+                statusLabel.Name = "userStatusLabel" + count;
+                statusLabel.Location = new Point(120, 180 * (int)Math.Round((double)(count / 4)));
+                statusLabel.Text = room["master"].ToString() == user["id"].ToString() ? "방장" : (user["game"]["ready"].ToString() == "True" ? "준비" : "대기");
                 moremi.Name = "userMoremiPictureBox" + count;
                 moremi.Image = renderMoremi(user["equip"]);
                 moremi.Location = new Point(0, 1);
@@ -490,8 +576,9 @@ namespace BFKKuTuClient
                 levelImage.Location = new Point(0, 120);
                 levelImage.Size = new Size(40, 40);
                 moremi.Parent = panel;
+                statusLabel.Parent = panel;
                 levelImage.Parent = panel;
-                label.Parent = panel;
+                nicknameLabel.Parent = panel;
                 AppendPanel(roomUsersBox, panel);
                 count++;
             }
@@ -513,12 +600,12 @@ namespace BFKKuTuClient
             SetText(myLevelLabel, "레벨 " + level.ToString());
             myLevelImage.ImageLocation = @"resources\kkutu\lv\lv" + level.ToString("D4") + ".png";
             SetText(myGlobalWinLabel, "통산 " + globalWin + "승");
-            SetText(myPingLabel, Int32.Parse(me["money"].ToString()).ToString("N0") + "핑");
-            SetText(myRankLabel, rank + "  " + Int32.Parse(me["data"]["rankPoint"].ToString()).ToString("N0") + "점");
+            SetText(myPingLabel, Int16.Parse(me["money"].ToString()).ToString("N0") + "핑");
+            SetText(myRankLabel, rank + "  " + Int16.Parse(me["data"]["rankPoint"].ToString()).ToString("N0") + "점");
             SetText(myLevelProgressLabel, Int32.Parse(me["data"]["score"].ToString()).ToString("N0") + " / " + Int32.Parse(EXP[level - 1].ToString()).ToString("N0") + "점");
             SetText(myOkgLabel, prettyTime(double.Parse(data._playTime)));
             SetProgressBarValue(myLevelProgressBar, engine.CallGlobalFunction<int>("calcProgress", new object[] { me.ToString() }));
-            SetProgressBarValue(myOkgProgressBar, Int32.Parse((double.Parse(data._playTime) % 600000 / 6000).ToString()));
+            SetProgressBarValue(myOkgProgressBar, Int32.Parse(data._playTime) % 600000 / 6000);
         }
 
         private string getRank(int rankPoint) {
@@ -768,8 +855,9 @@ namespace BFKKuTuClient
                 MessageBox.Show("서버와 연결되어 있지 않습니다.");
                 return;
             }
-            String json = @"{""relay"":false,""value"":"+"\""+chatinput.Text+"\""+"}";
+            string json = @"{""relay"":" + (isRelay ? "true" : "false") + @",""value"":"+"\""+chatinput.Text+"\""+"}";
             send("talk", json);
+            SetText(chatinput, "");
         }
 
         private void toLoginForm(object sender, EventArgs e) {
@@ -811,28 +899,15 @@ namespace BFKKuTuClient
             data = new ClientData();
         }
 
-        private void Chat(String _profile, String value, String from, String timestamp) {
+        private void Chat(string _profile, string value, string from, string timestamp) {
             JObject profile = JObject.Parse(_profile);
-            Label chat = new Label();
-            Panel panel = new Panel();
-
-            SetText(chatinput, "");
-            chat.Name = "chat"+timestamp;
-            chat.Text = profile["name"]+": "+value;
-            chat.AutoSize = true;
-            chat.Parent = panel;
-            chat.BackColor = Color.Transparent;
-            panel.MaximumSize = new Size(384, 20);
-            panel.Size = new Size(384, 20);
-            panel.Location = new Point(0, 20*chatCount);
-            panel.BackColor = Color.Transparent;
-            AppendPanel(chatBox, panel);
-            chatCount++;
+            AppendChat(timestamp, profile["name"].ToString(), value);
         }
 
         private void leaveRoomBtn_Click(object sender, EventArgs e)
         {
             if (rws.ReadyState != WebSocketState.Closed && rws.ReadyState != WebSocketState.Closing) rws.Close();
+            if (joinedRoom != 0) joinedRoom = 0;
             updateUI();
         }
 

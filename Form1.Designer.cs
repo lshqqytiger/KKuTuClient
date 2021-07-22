@@ -209,9 +209,9 @@ namespace BFKKuTuClient
             // 
             // roomInfoLabel
             // 
-            this.roomInfoLabel.Location = new System.Drawing.Point(395, 15);
+            this.roomInfoLabel.Location = new System.Drawing.Point(153, 15);
             this.roomInfoLabel.Name = "roomInfoLabel";
-            this.roomInfoLabel.Size = new System.Drawing.Size(323, 15);
+            this.roomInfoLabel.Size = new System.Drawing.Size(626, 22);
             this.roomInfoLabel.TabIndex = 0;
             this.roomInfoLabel.Text = "방 정보";
             this.roomInfoLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -225,7 +225,7 @@ namespace BFKKuTuClient
             // 
             // leaveRoomBtn
             // 
-            this.leaveRoomBtn.Location = new System.Drawing.Point(724, 8);
+            this.leaveRoomBtn.Location = new System.Drawing.Point(785, 8);
             this.leaveRoomBtn.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.leaveRoomBtn.Name = "leaveRoomBtn";
             this.leaveRoomBtn.Size = new System.Drawing.Size(75, 29);

@@ -54,7 +54,7 @@ namespace BFKKuTuClient
                 CheckBox checkBox = new CheckBox();
                 checkBox.AutoSize = true;
                 checkBox.Location = new Point((count % 2) * 150, 15 * (int)Math.Round((double)(count / 2)));
-                checkBox.Name = i;
+                checkBox.Name = OPTIONS[i]["name"].ToString().ToLower();
                 checkBox.Text = Lang["opt"+OPTIONS[i]["name"]].ToString();
                 checkBox.Parent = optsPanel;
                 count++;

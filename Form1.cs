@@ -9,7 +9,9 @@ using WebSocketSharp;
 using Newtonsoft.Json.Linq;
 using System.Net;
 using System.IO;
+using System.Text.RegularExpressions;
 using Jurassic.Library;
+using System.Threading;
 
 namespace BFKKuTuClient
 {
@@ -85,6 +87,7 @@ namespace BFKKuTuClient
         public ImprovedButton[] menuButtonsForNormal = new ImprovedButton[] { helpBtn, settingsBtn, friendsBtn, inquireBtn, spectateBtn, dictionaryBtn, practiceBtn, readyBtn };
         public ImprovedButton[] menuButtonsForGaming = new ImprovedButton[] { helpBtn, settingsBtn, friendsBtn, inquireBtn, dictionaryBtn };
         public bool isRelay = false;
+        public Thread wrongWordAlert = new Thread(() => { });
 
         private enum SSLProtocolHack
         {
@@ -121,6 +124,9 @@ namespace BFKKuTuClient
             roomBox.Parent = this;
             roomBox.BackgroundImage = Image.FromFile(@"resources\ui\571_360.png");
             roomBox.Visible = false;
+            gameBox.Parent = this;
+            gameBox.BackgroundImage = Image.FromFile(@"resources\ui\571_360.png");
+            gameBox.Visible = false;
 
             moremiBox.BackgroundImage = Image.FromFile(@"resources\ui\227_274.png");
             myMoremiPictureBox.BackgroundImage = Image.FromFile(@"resources\ui\120_120.png");
@@ -177,6 +183,15 @@ namespace BFKKuTuClient
 
             dynamic[] roomBoxChildren = new dynamic[] { roomTeamBox, roomUsersBox, roomTitleLabel, roomInfoLabel };
             dynamic roomBoxParent = roomBox;
+            foreach (var i in roomBoxChildren)
+            {
+                i.Location = roomBoxParent.PointToClient(i.Parent.PointToScreen(i.Location));
+                i.Parent = roomBoxParent;
+                i.BackColor = Color.Transparent;
+            }
+
+            dynamic[] gameBoxChildren = new dynamic[] { givenCharLabel, startingWordLabel, gamingUsersBox };
+            dynamic gameBoxParent = gameBox;
             foreach (var i in roomBoxChildren)
             {
                 i.Location = roomBoxParent.PointToClient(i.Parent.PointToScreen(i.Location));
@@ -436,7 +451,7 @@ namespace BFKKuTuClient
                     connectToRoom(Int16.Parse(res["id"].ToString()));
                     break;
                 case "room":
-                    if (joinedRoom != 0)
+                    if (joinedRoom == Int16.Parse(res["room"]["id"].ToString()))
                     {
                         SetText(roomTitleLabel, "[" + res["room"]["id"].ToString() + "] " + res["room"]["title"].ToString());
                         data.rooms[res["room"]["id"].ToString()] = res["room"];
@@ -460,11 +475,70 @@ namespace BFKKuTuClient
                     setUser(res);
                     if(joinedRoom != 0) updateRoom();
                     break;
+                case "starting":
+                    int count = 0;
+                    JToken room = data.rooms[res["target"].ToString()];
+                    Clear(gamingUsersBox);
+                    foreach (JToken i in room["players"])
+                    {
+                        JToken user = data.users[i.ToString()];
+                        Panel panel = new Panel();
+                        Label nicknameLabel = new Label();
+                        Label scoreLabel = new Label();
+                        PictureBox moremi = new PictureBox();
+                        PictureBox levelImage = new PictureBox();
+                        panel.Name = "gamingUserPanel" + user["id"].ToString();
+                        panel.Size = new Size(120, 163);
+                        panel.Location = new Point(165 * count, 0);
+                        nicknameLabel.Name = "gamingUserNicknameLabel" + count;
+                        nicknameLabel.Location = new Point(40, 120);
+                        nicknameLabel.Text = user["nickname"].ToString();
+                        scoreLabel.Name = "gamingUserScore" + user["id"].ToString();
+                        scoreLabel.Location = new Point(40, 140);
+                        scoreLabel.Text = "00000";
+                        moremi.Name = "gamingUserMoremiPictureBox" + count;
+                        moremi.Image = renderMoremi(user["equip"]);
+                        moremi.Location = new Point(0, 1);
+                        moremi.Size = new Size(120, 120);
+                        levelImage.Image = Image.FromFile(@"resources\kkutu\lv\lv" + getLevel(user["data"]["score"].ToObject<int>()).ToString().PadLeft(4, '0') + ".png");
+                        levelImage.Location = new Point(0, 120);
+                        levelImage.Size = new Size(40, 40);
+                        moremi.Parent = panel;
+                        levelImage.Parent = panel;
+                        nicknameLabel.Parent = panel;
+                        scoreLabel.Parent = panel;
+                        AppendPanel(gamingUsersBox, panel);
+                        count++;
+                    }
+                    Show(gameBox);
+                    Hide(roomBox);
+                    break;
+                case "roundReady":
+                    SetText(startingWordLabel, new string(data.rooms[joinedRoom.ToString()]["game"]["title"].ToString().ToCharArray().SelectMany(ch => new[] { ch, ' ' }).ToArray()));
+                    break;
                 case "turnStart":
+                    SetText(givenCharLabel, res["subChar"] == null ? res["char"].ToString() : res["char"].ToString()+"("+res["subChar"].ToString()+")");
                     isRelay = data.rooms[joinedRoom.ToString()]["game"]["seq"][int.Parse(res["turn"].ToString())].ToString() == data.id;
                     break;
                 case "turnEnd":
+                    Label scoreLabel_ = gamingUsersBox.Controls["gamingUserPanel" + res["profile"]["id"]].Controls["gamingUserScore" + res["profile"]["id"]] as Label;
+                    SetText(givenCharLabel, res["value"].ToString());
+                    SetText(scoreLabel_, (Int16.Parse(scoreLabel_.Text) + Int16.Parse(res["score"].ToString())).ToString().PadLeft(5, '0'));
                     isRelay = false;
+                    break;
+                case "turnError":
+                    MessageBox.Show(res.ToString());
+                    /*if (res["ok"].ToString() == "False")
+                    {
+                        givenCharLabel.ForeColor = Color.Red;
+                        wrongWordAlert = new Thread(() =>
+                        {
+                            Thread.Sleep(1000);
+                            givenCharLabel.ForeColor = Color.Black;
+                            SetText(givenCharLabel, "" + res["value"].ToString().ToArray()[0]);
+                        });
+                        wrongWordAlert.Start();
+                    }*/
                     break;
                 case "roomStuck":
                     MessageBox.Show("roomStuck");
@@ -521,6 +595,7 @@ namespace BFKKuTuClient
             {
                 Show(roomListBox);
                 Hide(roomBox);
+                Hide(gameBox);
             }
             loadShop(); // temp
             Clear(userListBox);
@@ -538,6 +613,7 @@ namespace BFKKuTuClient
             if (joinedRoom == 0) {
                 Show(roomListBox);
                 Hide(roomBox);
+                Hide(gameBox);
                 return;
             }
             Clear(roomUsersBox);
@@ -851,6 +927,7 @@ namespace BFKKuTuClient
 
         private void sendChat(object sender, EventArgs e)
         {
+            if (chatinput.Text == "") return;
             if (!wsConnected) {
                 MessageBox.Show("서버와 연결되어 있지 않습니다.");
                 return;
@@ -870,7 +947,7 @@ namespace BFKKuTuClient
             pw = _pw;
             sessionId = data[0];
             toLogin.Text = data[1];
-            toLogin.Location = new Point(1110 - data[1].Length*6, 11);
+            toLogin.Location = new Point(1253 - data[1].Length*6, 11);
             toLogin.Click -= toLoginForm;
             toLogin.Click += logout;
         }
@@ -883,7 +960,7 @@ namespace BFKKuTuClient
                 pw = String.Empty;
                 sessionId = String.Empty;
                 toLogin.Text = "로그인";
-                toLogin.Location = new Point(1110, 11);
+                toLogin.Location = new Point(1253, 11);
                 toLogin.Click += toLoginForm;
                 toLogin.Click -= logout;
             }
@@ -930,6 +1007,11 @@ namespace BFKKuTuClient
             JObject value = new JObject();
             value["value"] = clickedButton.Name.Substring(12);
             send("team", value);
+        }
+
+        private void chatinput_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter) sendChat(sender, new EventArgs());
         }
 
         delegate void SetTextCallback(dynamic label, string text);

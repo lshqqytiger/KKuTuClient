@@ -66,6 +66,9 @@ namespace BFKKuTuClient
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.chatBox = new System.Windows.Forms.Panel();
             this.gameBox = new System.Windows.Forms.Panel();
+            this.gamingUsersBox = new System.Windows.Forms.Panel();
+            this.startingWordLabel = new System.Windows.Forms.Label();
+            this.givenCharLabel = new System.Windows.Forms.Label();
             this.roomBox.SuspendLayout();
             this.roomTeamBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.myMoremiPictureBox)).BeginInit();
@@ -73,11 +76,12 @@ namespace BFKKuTuClient
             this.myMoremiPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.moremiBox)).BeginInit();
             this.chatBox.SuspendLayout();
+            this.gameBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // sendChatBtn
             // 
-            this.sendChatBtn.Location = new System.Drawing.Point(1078, 733);
+            this.sendChatBtn.Location = new System.Drawing.Point(1221, 733);
             this.sendChatBtn.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.sendChatBtn.Name = "sendChatBtn";
             this.sendChatBtn.Size = new System.Drawing.Size(75, 29);
@@ -109,7 +113,7 @@ namespace BFKKuTuClient
             // toLogin
             // 
             this.toLogin.AutoSize = true;
-            this.toLogin.Location = new System.Drawing.Point(1110, 11);
+            this.toLogin.Location = new System.Drawing.Point(1253, 11);
             this.toLogin.Name = "toLogin";
             this.toLogin.Size = new System.Drawing.Size(43, 15);
             this.toLogin.TabIndex = 11;
@@ -129,7 +133,7 @@ namespace BFKKuTuClient
             this.roomListBox.Location = new System.Drawing.Point(281, 88);
             this.roomListBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.roomListBox.Name = "roomListBox";
-            this.roomListBox.Size = new System.Drawing.Size(872, 395);
+            this.roomListBox.Size = new System.Drawing.Size(1015, 395);
             this.roomListBox.TabIndex = 14;
             // 
             // roomBox
@@ -142,7 +146,7 @@ namespace BFKKuTuClient
             this.roomBox.Location = new System.Drawing.Point(281, 88);
             this.roomBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.roomBox.Name = "roomBox";
-            this.roomBox.Size = new System.Drawing.Size(872, 395);
+            this.roomBox.Size = new System.Drawing.Size(1015, 395);
             this.roomBox.TabIndex = 15;
             // 
             // roomTeamBox
@@ -356,9 +360,9 @@ namespace BFKKuTuClient
             // 
             // menuBarPanel
             // 
-            this.menuBarPanel.Location = new System.Drawing.Point(186, 49);
+            this.menuBarPanel.Location = new System.Drawing.Point(281, 49);
             this.menuBarPanel.Name = "menuBarPanel";
-            this.menuBarPanel.Size = new System.Drawing.Size(967, 28);
+            this.menuBarPanel.Size = new System.Drawing.Size(1015, 28);
             this.menuBarPanel.TabIndex = 35;
             this.menuBarPanel.Visible = false;
             // 
@@ -385,8 +389,9 @@ namespace BFKKuTuClient
             this.chatinput.Location = new System.Drawing.Point(281, 739);
             this.chatinput.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.chatinput.Name = "chatinput";
-            this.chatinput.Size = new System.Drawing.Size(791, 23);
+            this.chatinput.Size = new System.Drawing.Size(934, 23);
             this.chatinput.TabIndex = 2;
+            this.chatinput.KeyDown += new System.Windows.Forms.KeyEventHandler(this.chatinput_KeyDown);
             // 
             // progressBar1
             // 
@@ -401,21 +406,51 @@ namespace BFKKuTuClient
             this.chatBox.Location = new System.Drawing.Point(281, 491);
             this.chatBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.chatBox.Name = "chatBox";
-            this.chatBox.Size = new System.Drawing.Size(872, 225);
+            this.chatBox.Size = new System.Drawing.Size(1015, 225);
             this.chatBox.TabIndex = 5;
             // 
             // gameBox
             // 
+            this.gameBox.Controls.Add(this.gamingUsersBox);
+            this.gameBox.Controls.Add(this.startingWordLabel);
+            this.gameBox.Controls.Add(this.givenCharLabel);
             this.gameBox.Location = new System.Drawing.Point(281, 88);
             this.gameBox.Name = "gameBox";
-            this.gameBox.Size = new System.Drawing.Size(872, 395);
+            this.gameBox.Size = new System.Drawing.Size(1015, 395);
             this.gameBox.TabIndex = 19;
+            // 
+            // gamingUsersBox
+            // 
+            this.gamingUsersBox.Location = new System.Drawing.Point(19, 215);
+            this.gamingUsersBox.Name = "gamingUsersBox";
+            this.gamingUsersBox.Size = new System.Drawing.Size(978, 163);
+            this.gamingUsersBox.TabIndex = 2;
+            // 
+            // startingWordLabel
+            // 
+            this.startingWordLabel.Font = new System.Drawing.Font("맑은 고딕", 15F);
+            this.startingWordLabel.Location = new System.Drawing.Point(0, 26);
+            this.startingWordLabel.Name = "startingWordLabel";
+            this.startingWordLabel.Size = new System.Drawing.Size(1015, 34);
+            this.startingWordLabel.TabIndex = 1;
+            this.startingWordLabel.Text = "게임 시작 단어";
+            this.startingWordLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // givenCharLabel
+            // 
+            this.givenCharLabel.Font = new System.Drawing.Font("맑은 고딕", 20F);
+            this.givenCharLabel.Location = new System.Drawing.Point(0, 60);
+            this.givenCharLabel.Name = "givenCharLabel";
+            this.givenCharLabel.Size = new System.Drawing.Size(1015, 37);
+            this.givenCharLabel.TabIndex = 0;
+            this.givenCharLabel.Text = "주어진 글자";
+            this.givenCharLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1165, 777);
+            this.ClientSize = new System.Drawing.Size(1308, 777);
             this.Controls.Add(this.myNicknameLabel);
             this.Controls.Add(this.menuBarPanel);
             this.Controls.Add(this.myMoremiPanel);
@@ -437,9 +472,9 @@ namespace BFKKuTuClient
             this.Controls.Add(this.sendChatBtn);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.moremiBox);
+            this.Controls.Add(this.gameBox);
             this.Controls.Add(this.roomBox);
             this.Controls.Add(this.roomListBox);
-            this.Controls.Add(this.gameBox);
             this.Font = new System.Drawing.Font("맑은 고딕", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -455,6 +490,7 @@ namespace BFKKuTuClient
             this.myMoremiPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.moremiBox)).EndInit();
             this.chatBox.ResumeLayout(false);
+            this.gameBox.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -497,6 +533,9 @@ namespace BFKKuTuClient
         private System.Windows.Forms.Panel chatBox;
         private System.Windows.Forms.Button roomTeamBtn_4;
         private System.Windows.Forms.Panel gameBox;
+        private System.Windows.Forms.Label givenCharLabel;
+        private System.Windows.Forms.Label startingWordLabel;
+        private System.Windows.Forms.Panel gamingUsersBox;
     }
 }
 

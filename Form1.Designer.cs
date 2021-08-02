@@ -66,6 +66,7 @@ namespace BFKKuTuClient
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.chatBox = new System.Windows.Forms.Panel();
             this.gameBox = new System.Windows.Forms.Panel();
+            this.chainWordsBox = new System.Windows.Forms.Panel();
             this.gamingUsersBox = new System.Windows.Forms.Panel();
             this.startingWordLabel = new System.Windows.Forms.Label();
             this.givenCharLabel = new System.Windows.Forms.Label();
@@ -411,6 +412,7 @@ namespace BFKKuTuClient
             // 
             // gameBox
             // 
+            this.gameBox.Controls.Add(this.chainWordsBox);
             this.gameBox.Controls.Add(this.gamingUsersBox);
             this.gameBox.Controls.Add(this.startingWordLabel);
             this.gameBox.Controls.Add(this.givenCharLabel);
@@ -418,6 +420,13 @@ namespace BFKKuTuClient
             this.gameBox.Name = "gameBox";
             this.gameBox.Size = new System.Drawing.Size(1015, 395);
             this.gameBox.TabIndex = 19;
+            // 
+            // chainWordsBox
+            // 
+            this.chainWordsBox.Location = new System.Drawing.Point(22, 103);
+            this.chainWordsBox.Name = "chainWordsBox";
+            this.chainWordsBox.Size = new System.Drawing.Size(978, 50);
+            this.chainWordsBox.TabIndex = 3;
             // 
             // gamingUsersBox
             // 
@@ -536,6 +545,7 @@ namespace BFKKuTuClient
         private System.Windows.Forms.Label givenCharLabel;
         private System.Windows.Forms.Label startingWordLabel;
         private System.Windows.Forms.Panel gamingUsersBox;
+        private System.Windows.Forms.Panel chainWordsBox;
     }
 }
 

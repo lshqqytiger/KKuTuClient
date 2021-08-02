@@ -23,22 +23,22 @@ namespace BFKKuTuClient
     {
         public class ClientData
         {
-            public String id;
-            public Boolean admin;
-            public String careful;
+            public string id;
+            public bool admin;
+            public string careful;
             public int soundLoadCount = 0;
             public int place = 0;
-            public String nickname;
-            public String exordial;
+            public string nickname;
+            public string exordial;
             public JObject users;
             public JObject robots = new JObject();
             public JObject rooms;
             public JObject friends;
             public JObject _friends = new JObject();
-            public String _playTime;
-            public String _okg;
-            public Boolean _cF;
-            public Boolean gaming = false;
+            public string _playTime;
+            public string _okg;
+            public bool _cF;
+            public bool gaming = false;
             public JObject box;
             public JObject shop;
             public bool preQuick = false;
@@ -46,14 +46,14 @@ namespace BFKKuTuClient
 
         public WebSocket ws = new WebSocket("wss://ws.bfkkutu.kr/g10000/");
         public WebSocket rws = new WebSocket("wss://ws.bfkkutu.kr/g10000/");
-        public String sessionId = "";
+        public string sessionId = "";
         public ClientData data = new ClientData();
         public int chatCount = 0;
-        public String nickname;
-        public String id = String.Empty, pw = String.Empty;
-        public Boolean wsConnected = false;
+        public string nickname;
+        public string id = string.Empty, pw = string.Empty;
+        public bool wsConnected = false;
         public int joinedRoom = 0;
-        public string promptResult = String.Empty;
+        public string promptResult = string.Empty;
         public int[] EXP = new int[361];
         public int MAX_LEVEL = 360;
         CreateRoomDialog CreateRoomDialogForm = new CreateRoomDialog(new string[] { }, new JObject(), new JObject(), new JObject(), new ClientData());
@@ -88,6 +88,7 @@ namespace BFKKuTuClient
         public ImprovedButton[] menuButtonsForGaming = new ImprovedButton[] { helpBtn, settingsBtn, friendsBtn, inquireBtn, dictionaryBtn };
         public bool isRelay = false;
         public Thread wrongWordAlert = new Thread(() => { });
+        public int gameTurn = 0;
 
         private enum SSLProtocolHack
         {
@@ -259,7 +260,7 @@ namespace BFKKuTuClient
                     send("start");
                     break;
                 default:
-                    MessageBox.Show("there's no event listener for button "+type);
+                    MessageBox.Show("there's no event listener for button " + type);
                     break;
             }
         }
@@ -279,13 +280,13 @@ namespace BFKKuTuClient
                 {
                     appendButton(i);
                 }
-            }else if (data.gaming)
+            } else if (data.gaming)
             {
                 foreach (ImprovedButton i in menuButtonsForGaming)
                 {
                     appendButton(i);
                 }
-            }else if (data.rooms[joinedRoom.ToString()]["master"].ToString() == data.id)
+            } else if (data.rooms[joinedRoom.ToString()]["master"].ToString() == data.id)
             {
                 foreach (ImprovedButton i in menuButtonsForMaster)
                 {
@@ -317,7 +318,7 @@ namespace BFKKuTuClient
         {
             var target = joinedRoom == 0 ? ws : (rws.ReadyState == WebSocketState.Open ? rws : ws);
 
-            if(obj is string)
+            if (obj is string)
             {
                 obj = JObject.Parse(obj);
             }
@@ -355,7 +356,7 @@ namespace BFKKuTuClient
             }
 
             sessionId = get("https://bfkkutu.kr/client/session?id=" + id + "&pw=" + pw);
-            using (ws = new WebSocket("wss://ws.bfkkutu.kr/g10000/"+sessionId))
+            using (ws = new WebSocket("wss://ws.bfkkutu.kr/g10000/" + sessionId))
             {
                 ws.OnOpen += (se, ev) =>
                 {
@@ -410,7 +411,7 @@ namespace BFKKuTuClient
                     //updateUI(void 0, !0), welcome(), a.caj && checkAge(), updateCommunity();
                     break;
                 case "conn":
-				    // TODO
+                    // TODO
                     break;
                 case "disconn":
                     // TODO
@@ -438,7 +439,7 @@ namespace BFKKuTuClient
                     data.careful = res["careful"].ToString();
                     data.nickname = res["nickname"].ToString();
                     data.exordial = res["exordial"].ToString();
-                    if(joinedRoom == 0) data.users = JObject.Parse(res["users"].ToString());
+                    if (joinedRoom == 0) data.users = JObject.Parse(res["users"].ToString());
                     data.rooms = JObject.Parse(res["rooms"].ToString());
                     data.friends = JObject.Parse(res["friends"].ToString());
                     data._playTime = res["playTime"].ToString();
@@ -462,7 +463,7 @@ namespace BFKKuTuClient
                     }
                     break;
                 case "connRoom":
-                    if(data.preQuick)
+                    if (data.preQuick)
                     {
                         // handle quick succeeded
                     }
@@ -473,72 +474,110 @@ namespace BFKKuTuClient
                     break;
                 case "user":
                     setUser(res);
-                    if(joinedRoom != 0) updateRoom();
+                    if (joinedRoom != 0) updateRoom();
                     break;
                 case "starting":
-                    int count = 0;
-                    JToken room = data.rooms[res["target"].ToString()];
                     Clear(gamingUsersBox);
-                    foreach (JToken i in room["players"])
-                    {
-                        JToken user = data.users[i.ToString()];
-                        Panel panel = new Panel();
-                        Label nicknameLabel = new Label();
-                        Label scoreLabel = new Label();
-                        PictureBox moremi = new PictureBox();
-                        PictureBox levelImage = new PictureBox();
-                        panel.Name = "gamingUserPanel" + user["id"].ToString();
-                        panel.Size = new Size(120, 163);
-                        panel.Location = new Point(165 * count, 0);
-                        nicknameLabel.Name = "gamingUserNicknameLabel" + count;
-                        nicknameLabel.Location = new Point(40, 120);
-                        nicknameLabel.Text = user["nickname"].ToString();
-                        scoreLabel.Name = "gamingUserScore" + user["id"].ToString();
-                        scoreLabel.Location = new Point(40, 140);
-                        scoreLabel.Text = "00000";
-                        moremi.Name = "gamingUserMoremiPictureBox" + count;
-                        moremi.Image = renderMoremi(user["equip"]);
-                        moremi.Location = new Point(0, 1);
-                        moremi.Size = new Size(120, 120);
-                        levelImage.Image = Image.FromFile(@"resources\kkutu\lv\lv" + getLevel(user["data"]["score"].ToObject<int>()).ToString().PadLeft(4, '0') + ".png");
-                        levelImage.Location = new Point(0, 120);
-                        levelImage.Size = new Size(40, 40);
-                        moremi.Parent = panel;
-                        levelImage.Parent = panel;
-                        nicknameLabel.Parent = panel;
-                        scoreLabel.Parent = panel;
-                        AppendPanel(gamingUsersBox, panel);
-                        count++;
-                    }
                     Show(gameBox);
                     Hide(roomBox);
                     break;
                 case "roundReady":
+                    gameTurn = 0;
+                    if(res["round"].ToString() == "1")
+                    {
+                        int count = 0;
+                        JToken room = data.rooms[joinedRoom.ToString()];
+                        foreach (JToken i in room["game"]["seq"])
+                        {
+                            JToken user = data.users[i.ToString()];
+                            Panel panel = new Panel();
+                            Label nicknameLabel = new Label();
+                            Label scoreLabel = new Label();
+                            PictureBox moremi = new PictureBox();
+                            PictureBox levelImage = new PictureBox();
+                            panel.Name = "gamingUserPanel" + i.ToString();
+                            panel.Size = new Size(120, 163);
+                            panel.Location = new Point(165 * count, 0);
+                            nicknameLabel.Name = "gamingUserNicknameLabel" + count;
+                            nicknameLabel.Location = new Point(40, 120);
+                            nicknameLabel.Text = user["nickname"].ToString();
+                            scoreLabel.Name = "gamingUserScore" + i.ToString();
+                            scoreLabel.Location = new Point(40, 140);
+                            scoreLabel.Text = "00000";
+                            moremi.Name = "gamingUserMoremiPictureBox" + count;
+                            moremi.Image = renderMoremi(user["equip"]);
+                            moremi.Location = new Point(0, 1);
+                            moremi.Size = new Size(120, 120);
+                            levelImage.Image = Image.FromFile(@"resources\kkutu\lv\lv" + getLevel(user["data"]["score"].ToObject<int>()).ToString().PadLeft(4, '0') + ".png");
+                            levelImage.Location = new Point(0, 120);
+                            levelImage.Size = new Size(40, 40);
+                            moremi.Parent = panel;
+                            levelImage.Parent = panel;
+                            nicknameLabel.Parent = panel;
+                            scoreLabel.Parent = panel;
+                            AppendPanel(gamingUsersBox, panel);
+                            count++;
+                        }
+                    }
+                    Clear(chainWordsBox);
                     SetText(startingWordLabel, new string(data.rooms[joinedRoom.ToString()]["game"]["title"].ToString().ToCharArray().SelectMany(ch => new[] { ch, ' ' }).ToArray()));
                     break;
                 case "turnStart":
-                    SetText(givenCharLabel, res["subChar"] == null ? res["char"].ToString() : res["char"].ToString()+"("+res["subChar"].ToString()+")");
+                    gamingUsersBox.Controls["gamingUserPanel" + data.rooms[joinedRoom.ToString()]["game"]["seq"][Int32.Parse(res["turn"].ToString())].ToString()].BackColor = Color.LightGreen;
+                    SetText(givenCharLabel, res["subChar"] == null ? res["char"].ToString() : res["char"].ToString() + "(" + res["subChar"].ToString() + ")");
                     isRelay = data.rooms[joinedRoom.ToString()]["game"]["seq"][int.Parse(res["turn"].ToString())].ToString() == data.id;
                     break;
                 case "turnEnd":
-                    Label scoreLabel_ = gamingUsersBox.Controls["gamingUserPanel" + res["profile"]["id"]].Controls["gamingUserScore" + res["profile"]["id"]] as Label;
-                    SetText(givenCharLabel, res["value"].ToString());
-                    SetText(scoreLabel_, (Int16.Parse(scoreLabel_.Text) + Int16.Parse(res["score"].ToString())).ToString().PadLeft(5, '0'));
-                    isRelay = false;
-                    break;
-                case "turnError":
-                    MessageBox.Show(res.ToString());
-                    /*if (res["ok"].ToString() == "False")
+                    if(res["ok"].ToString() == "False")
                     {
-                        givenCharLabel.ForeColor = Color.Red;
+                        givenCharLabel.ForeColor = Color.Gray;
+                        SetText(givenCharLabel, res["hint"]["_id"].ToString());
                         wrongWordAlert = new Thread(() =>
                         {
                             Thread.Sleep(1000);
                             givenCharLabel.ForeColor = Color.Black;
-                            SetText(givenCharLabel, "" + res["value"].ToString().ToArray()[0]);
+                            SetText(givenCharLabel, "");
                         });
                         wrongWordAlert.Start();
-                    }*/
+                        return;
+                    }
+                    gameTurn++;
+                    foreach (Control i in chainWordsBox.Controls)
+                    {
+                        Panel panel = i as Panel;
+                        if (gameTurn - Int16.Parse(panel.Name.Substring(11)) > 5)
+                        {
+                            Delete(panel);
+                        }
+                        else
+                        {
+                            move(panel, 200);
+                        }
+                    }
+                    Label scoreLabel_ = gamingUsersBox.Controls["gamingUserPanel" + res["profile"]["id"]].Controls["gamingUserScore" + res["profile"]["id"]] as Label;
+                    Panel chainPanel = new Panel();
+                    Label chainWord = new Label();
+                    chainPanel.Name = "chainPanel_" + gameTurn;
+                    chainPanel.Location = new Point(0, 0);
+                    chainPanel.Size = new Size(190, 50);
+                    chainWord.Text = res["value"].ToString();
+                    chainWord.Parent = chainPanel;
+                    chainWord.TextAlign = ContentAlignment.TopCenter;
+                    AppendPanel(chainWordsBox, chainPanel);
+                    SetText(givenCharLabel, res["value"].ToString());
+                    SetText(scoreLabel_, (Int16.Parse(scoreLabel_.Text) + Int16.Parse(res["score"].ToString())).ToString().PadLeft(5, '0'));
+                    isRelay = false;
+                    gamingUsersBox.Controls["gamingUserPanel" + res["profile"]["id"].ToString()].BackColor = Color.Transparent;
+                    break;
+                case "turnError":
+                    givenCharLabel.ForeColor = Color.Red;
+                    wrongWordAlert = new Thread(() =>
+                    {
+                        Thread.Sleep(1000);
+                        givenCharLabel.ForeColor = Color.Black;
+                        SetText(givenCharLabel, "" + res["value"].ToString().ToArray()[0]);
+                    });
+                    wrongWordAlert.Start();
                     break;
                 case "roomStuck":
                     MessageBox.Show("roomStuck");
@@ -547,7 +586,7 @@ namespace BFKKuTuClient
                     MessageBox.Show("오류 발생!: " + res.ToString());
                     break;
                 default:
-                    MessageBox.Show("Unhandled WebSocket Message "+ res["type"].ToString() + ": " + res.ToString());
+                    MessageBox.Show("Unhandled WebSocket Message " + res["type"].ToString() + ": " + res.ToString());
                     break;
             }
         }
@@ -1024,6 +1063,34 @@ namespace BFKKuTuClient
         delegate void DynamicShowCallback(dynamic element);
         delegate void DynamicHideCallback(dynamic element);
         delegate void SetLocationCallback(dynamic element, Point location);
+        delegate void MoveCallBack(dynamic element, int x = 0, int y = 0);
+        delegate void DeleteCallBack(dynamic element);
+
+        private void Delete(dynamic element)
+        {
+            if (element.InvokeRequired)
+            {
+                DeleteCallBack d = new DeleteCallBack(Delete);
+                this.Invoke(d, new object[] { element });
+            }
+            else
+            {
+                element.Parent = null;
+            }
+        }
+
+        private void move(dynamic element, int x = 0, int y = 0)
+        {
+            if (element.InvokeRequired)
+            {
+                MoveCallBack d = new MoveCallBack(move);
+                this.Invoke(d, new object[] { element, x, y });
+            }
+            else
+            {
+                element.Location = new Point(element.Location.X + x, element.Location.Y + y);
+            }
+        }
 
         private void SetText(dynamic label, string text)
         {

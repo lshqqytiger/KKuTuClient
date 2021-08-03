@@ -66,6 +66,8 @@ namespace BFKKuTuClient
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.chatBox = new System.Windows.Forms.Panel();
             this.gameBox = new System.Windows.Forms.Panel();
+            this.turnTimeProgressBarLabel = new System.Windows.Forms.Label();
+            this.turnTimeProgressBar = new System.Windows.Forms.ProgressBar();
             this.chainWordsBox = new System.Windows.Forms.Panel();
             this.gamingUsersBox = new System.Windows.Forms.Panel();
             this.startingWordLabel = new System.Windows.Forms.Label();
@@ -412,6 +414,8 @@ namespace BFKKuTuClient
             // 
             // gameBox
             // 
+            this.gameBox.Controls.Add(this.turnTimeProgressBarLabel);
+            this.gameBox.Controls.Add(this.turnTimeProgressBar);
             this.gameBox.Controls.Add(this.chainWordsBox);
             this.gameBox.Controls.Add(this.gamingUsersBox);
             this.gameBox.Controls.Add(this.startingWordLabel);
@@ -421,9 +425,25 @@ namespace BFKKuTuClient
             this.gameBox.Size = new System.Drawing.Size(1015, 395);
             this.gameBox.TabIndex = 19;
             // 
+            // turnTimeProgressBarLabel
+            // 
+            this.turnTimeProgressBarLabel.AutoSize = true;
+            this.turnTimeProgressBarLabel.Location = new System.Drawing.Point(958, 115);
+            this.turnTimeProgressBarLabel.Name = "turnTimeProgressBarLabel";
+            this.turnTimeProgressBarLabel.Size = new System.Drawing.Size(47, 15);
+            this.turnTimeProgressBarLabel.TabIndex = 5;
+            this.turnTimeProgressBarLabel.Text = "턴 시간";
+            // 
+            // turnTimeProgressBar
+            // 
+            this.turnTimeProgressBar.Location = new System.Drawing.Point(19, 107);
+            this.turnTimeProgressBar.Name = "turnTimeProgressBar";
+            this.turnTimeProgressBar.Size = new System.Drawing.Size(978, 23);
+            this.turnTimeProgressBar.TabIndex = 4;
+            // 
             // chainWordsBox
             // 
-            this.chainWordsBox.Location = new System.Drawing.Point(22, 103);
+            this.chainWordsBox.Location = new System.Drawing.Point(19, 136);
             this.chainWordsBox.Name = "chainWordsBox";
             this.chainWordsBox.Size = new System.Drawing.Size(978, 50);
             this.chainWordsBox.TabIndex = 3;
@@ -500,6 +520,7 @@ namespace BFKKuTuClient
             ((System.ComponentModel.ISupportInitialize)(this.moremiBox)).EndInit();
             this.chatBox.ResumeLayout(false);
             this.gameBox.ResumeLayout(false);
+            this.gameBox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -546,6 +567,8 @@ namespace BFKKuTuClient
         private System.Windows.Forms.Label startingWordLabel;
         private System.Windows.Forms.Panel gamingUsersBox;
         private System.Windows.Forms.Panel chainWordsBox;
+        private System.Windows.Forms.ProgressBar turnTimeProgressBar;
+        private System.Windows.Forms.Label turnTimeProgressBarLabel;
     }
 }
 

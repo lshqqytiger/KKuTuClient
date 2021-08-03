@@ -12,6 +12,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Jurassic.Library;
 using System.Threading;
+using System.Media;
 
 namespace BFKKuTuClient
 {
@@ -46,14 +47,14 @@ namespace BFKKuTuClient
 
         public WebSocket ws = new WebSocket("wss://ws.bfkkutu.kr/g10000/");
         public WebSocket rws = new WebSocket("wss://ws.bfkkutu.kr/g10000/");
-        public string sessionId = "";
+        public string sessionId;
         public ClientData data = new ClientData();
         public int chatCount = 0;
         public string nickname;
-        public string id = string.Empty, pw = string.Empty;
+        public string id, pw;
         public bool wsConnected = false;
         public int joinedRoom = 0;
-        public string promptResult = string.Empty;
+        public string promptResult;
         public int[] EXP = new int[361];
         public int MAX_LEVEL = 360;
         CreateRoomDialog CreateRoomDialogForm = new CreateRoomDialog(new string[] { }, new JObject(), new JObject(), new JObject(), new ClientData());
@@ -87,8 +88,21 @@ namespace BFKKuTuClient
         public ImprovedButton[] menuButtonsForNormal = new ImprovedButton[] { helpBtn, settingsBtn, friendsBtn, inquireBtn, spectateBtn, dictionaryBtn, practiceBtn, readyBtn };
         public ImprovedButton[] menuButtonsForGaming = new ImprovedButton[] { helpBtn, settingsBtn, friendsBtn, inquireBtn, dictionaryBtn };
         public bool isRelay = false;
-        public Thread wrongWordAlert = new Thread(() => { });
+        public Thread failAlert = new Thread(() => { });
         public int gameTurn = 0;
+        public SoundPlayer lobbyBGM = new SoundPlayer(Path.Combine(Directory.GetCurrentDirectory(), @"resources\sound\lobby.wav"));
+        public SoundPlayer gameStart = new SoundPlayer(Path.Combine(Directory.GetCurrentDirectory(), @"resources\sound\game_start.wav"));
+        public SoundPlayer roundStart = new SoundPlayer(Path.Combine(Directory.GetCurrentDirectory(), @"resources\sound\round_start.wav"));
+        public SoundPlayer[] gameSound_T = new SoundPlayer[] { };
+        public SoundPlayer[] gameSound_K = new SoundPlayer[] { };
+        public SoundPlayer[] gameSound_As = new SoundPlayer[] { };
+        public SoundPlayer failSound = new SoundPlayer(Path.Combine(Directory.GetCurrentDirectory(), @"resources\sound\fail.wav"));
+        public SoundPlayer timeoutSound = new SoundPlayer(Path.Combine(Directory.GetCurrentDirectory(), @"resources\sound\timeout.wav"));
+        public string nowTurnSpeed;
+        public int nowTurnTime;
+        public string[] BEAT = new string[] { null, "10000000", "10001000", "10010010", "10011010", "11011010", "11011110", "11011111", "11111111" };
+        public Thread turnTimer = new Thread(() => { });
+        public Thread roundTimer = new Thread(() => { });
 
         private enum SSLProtocolHack
         {
@@ -191,7 +205,7 @@ namespace BFKKuTuClient
                 i.BackColor = Color.Transparent;
             }
 
-            dynamic[] gameBoxChildren = new dynamic[] { givenCharLabel, startingWordLabel, gamingUsersBox };
+            dynamic[] gameBoxChildren = new dynamic[] { givenCharLabel, startingWordLabel, gamingUsersBox, turnTimeProgressBar, turnTimeProgressBarLabel };
             dynamic gameBoxParent = gameBox;
             foreach (var i in roomBoxChildren)
             {
@@ -228,6 +242,22 @@ namespace BFKKuTuClient
                     menuButtonClicked(i.id);
                 };
             }
+            Array.Resize(ref gameSound_T, 11);
+            Array.Resize(ref gameSound_K, 11);
+            Array.Resize(ref gameSound_As, 12);
+            for (int i = 0; i <= 10; i++)
+            {
+                gameSound_T[i] = new SoundPlayer(Path.Combine(Directory.GetCurrentDirectory(), @"resources\sound\turn\" + i + ".wav"));
+            }
+            for (int i = 0; i <= 10; i++)
+            {
+                gameSound_K[i] = new SoundPlayer(Path.Combine(Directory.GetCurrentDirectory(), @"resources\sound\k\" + i + ".wav"));
+            }
+            for (int i = 0; i <= 10; i++)
+            {
+                gameSound_As[i] = new SoundPlayer(Path.Combine(Directory.GetCurrentDirectory(), @"resources\sound\as\" + i + ".wav"));
+            }
+            gameSound_As[11] = new SoundPlayer(Path.Combine(Directory.GetCurrentDirectory(), @"resources\sound\as\Al.wav"));
         }
 
         public class ImprovedButton : Button
@@ -390,6 +420,11 @@ namespace BFKKuTuClient
             ws.Connect();
         }
 
+        private void welcome()
+        {
+            lobbyBGM.PlayLooping();
+        }
+
         private void wsOnMessage(JObject res)
         {
             switch (res["type"].ToString())
@@ -407,6 +442,7 @@ namespace BFKKuTuClient
                     data._okg = res["okg"].ToString();
                     data._cF = res["chatFreeze"].ToString() == "true";
                     data.box = JObject.Parse(res["box"].ToString());
+                    welcome();
                     updateUI();
                     //updateUI(void 0, !0), welcome(), a.caj && checkAge(), updateCommunity();
                     break;
@@ -477,12 +513,18 @@ namespace BFKKuTuClient
                     if (joinedRoom != 0) updateRoom();
                     break;
                 case "starting":
+                    data.gaming = true;
+                    setupMenuButtons();
+                    lobbyBGM.Stop();
+                    gameStart.Play();
                     Clear(gamingUsersBox);
                     Show(gameBox);
                     Hide(roomBox);
                     break;
                 case "roundReady":
                     gameTurn = 0;
+                    gameStart.Stop();
+                    roundStart.Play();
                     if(res["round"].ToString() == "1")
                     {
                         int count = 0;
@@ -523,22 +565,44 @@ namespace BFKKuTuClient
                     SetText(startingWordLabel, new string(data.rooms[joinedRoom.ToString()]["game"]["title"].ToString().ToCharArray().SelectMany(ch => new[] { ch, ' ' }).ToArray()));
                     break;
                 case "turnStart":
+                    SetLocation(turnTimeProgressBarLabel, new Point(958, 115));
+                    nowTurnSpeed = res["speed"].ToString();
+                    nowTurnTime = Int16.Parse(res["turnTime"].ToString());
+                    SetProgressBarMaximum(turnTimeProgressBar, nowTurnTime/10);
+                    turnTimer = new Thread(() =>
+                    {
+                        for (int i = 0; i <= nowTurnTime / 10; i++)
+                        {
+                            SetProgressBarValue(turnTimeProgressBar, nowTurnTime/10 - i);
+                            if(i % (5/4) == 1/4) move(turnTimeProgressBarLabel, -1);
+                            SetText(turnTimeProgressBarLabel, nowTurnTime - i*10+"ms");
+                            Thread.Sleep(10);
+                        }
+                    });
+                    turnTimer.Start();
+                    roundStart.Stop();
+                    gameSound_T[Int16.Parse(nowTurnSpeed)].Play();
                     gamingUsersBox.Controls["gamingUserPanel" + data.rooms[joinedRoom.ToString()]["game"]["seq"][Int32.Parse(res["turn"].ToString())].ToString()].BackColor = Color.LightGreen;
                     SetText(givenCharLabel, res["subChar"] == null ? res["char"].ToString() : res["char"].ToString() + "(" + res["subChar"].ToString() + ")");
                     isRelay = data.rooms[joinedRoom.ToString()]["game"]["seq"][int.Parse(res["turn"].ToString())].ToString() == data.id;
                     break;
                 case "turnEnd":
+                    turnTimer.Abort();
+                    gameSound_T[Int16.Parse(nowTurnSpeed)].Stop();
                     if(res["ok"].ToString() == "False")
                     {
+                        failAlert.Abort();
+                        timeoutSound.Play();
                         givenCharLabel.ForeColor = Color.Gray;
                         SetText(givenCharLabel, res["hint"]["_id"].ToString());
-                        wrongWordAlert = new Thread(() =>
+                        failAlert = new Thread(() =>
                         {
                             Thread.Sleep(1000);
+                            timeoutSound.Stop();
                             givenCharLabel.ForeColor = Color.Black;
                             SetText(givenCharLabel, "");
                         });
-                        wrongWordAlert.Start();
+                        failAlert.Start();
                         return;
                     }
                     gameTurn++;
@@ -557,12 +621,32 @@ namespace BFKKuTuClient
                     Label scoreLabel_ = gamingUsersBox.Controls["gamingUserPanel" + res["profile"]["id"]].Controls["gamingUserScore" + res["profile"]["id"]] as Label;
                     Panel chainPanel = new Panel();
                     Label chainWord = new Label();
+                    string beat = res["value"].ToString().Length <= 8 ? BEAT[res["value"].ToString().Length] : res["value"].ToString();
+                    int asIndex = res["value"].ToString().Length <= 8 ? Int16.Parse(nowTurnSpeed) : 11;
                     chainPanel.Name = "chainPanel_" + gameTurn;
                     chainPanel.Location = new Point(0, 0);
                     chainPanel.Size = new Size(190, 50);
                     chainWord.Text = res["value"].ToString();
                     chainWord.Parent = chainPanel;
                     chainWord.TextAlign = ContentAlignment.TopCenter;
+                    if(beat != null)
+                    {
+                        new Thread(() =>
+                        {
+                            for (int i = 0; i < beat.Length; i++)
+                            {
+                                char beatChar = beat.ToArray()[i];
+                                if (beatChar == '0') {
+                                    Thread.Sleep(nowTurnTime / (beat.Length * 12));
+                                    continue;
+                                }
+                                gameSound_As[asIndex].Play();
+                                Thread.Sleep(nowTurnTime / (beat.Length * 12));
+                                //gameSound_As[asIndex].Stop();
+                            }
+                            gameSound_K[Int16.Parse(nowTurnSpeed)].Play();
+                        }).Start();
+                    }
                     AppendPanel(chainWordsBox, chainPanel);
                     SetText(givenCharLabel, res["value"].ToString());
                     SetText(scoreLabel_, (Int16.Parse(scoreLabel_.Text) + Int16.Parse(res["score"].ToString())).ToString().PadLeft(5, '0'));
@@ -570,14 +654,17 @@ namespace BFKKuTuClient
                     gamingUsersBox.Controls["gamingUserPanel" + res["profile"]["id"].ToString()].BackColor = Color.Transparent;
                     break;
                 case "turnError":
+                    failSound.Play();
+                    failAlert.Abort();
                     givenCharLabel.ForeColor = Color.Red;
-                    wrongWordAlert = new Thread(() =>
+                    failAlert = new Thread(() =>
                     {
                         Thread.Sleep(1000);
+                        failSound.Stop();
                         givenCharLabel.ForeColor = Color.Black;
-                        SetText(givenCharLabel, "" + res["value"].ToString().ToArray()[0]);
+                        SetText(givenCharLabel, "" + res["value"].ToString());
                     });
-                    wrongWordAlert.Start();
+                    failAlert.Start();
                     break;
                 case "roomStuck":
                     MessageBox.Show("roomStuck");
@@ -1065,6 +1152,20 @@ namespace BFKKuTuClient
         delegate void SetLocationCallback(dynamic element, Point location);
         delegate void MoveCallBack(dynamic element, int x = 0, int y = 0);
         delegate void DeleteCallBack(dynamic element);
+        delegate void SetProgressBarMaximumCallBack(ProgressBar progressbar, int maximum);
+
+        private void SetProgressBarMaximum(ProgressBar progressbar, int maximum)
+        {
+            if (progressbar.InvokeRequired)
+            {
+                SetProgressBarMaximumCallBack d = new SetProgressBarMaximumCallBack(SetProgressBarMaximum);
+                this.Invoke(d, new object[] { progressbar, maximum });
+            }
+            else
+            {
+                progressbar.Maximum = maximum;
+            }
+        }
 
         private void Delete(dynamic element)
         {

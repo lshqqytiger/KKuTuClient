@@ -93,7 +93,7 @@ namespace BFKKuTuClient
             }
             roomData.Add("opts", opts.ToString());
             CreateRoomEvent(roomData);
-            this.Close();
+            Close();
         }
 
         delegate void ClearPanelCallback(Panel panel);
@@ -103,7 +103,7 @@ namespace BFKKuTuClient
             if (panel.InvokeRequired)
             {
                 ClearPanelCallback d = new ClearPanelCallback(Clear);
-                this.Invoke(d, new object[] { panel });
+                Invoke(d, new object[] { panel });
             }
             else
             {

@@ -1,18 +1,17 @@
-﻿using System;
+﻿using Jurassic.Library;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Media;
+using System.Net;
+using System.Threading;
 using System.Windows.Forms;
 using WebSocketSharp;
-using Newtonsoft.Json.Linq;
-using System.Net;
-using System.IO;
-using System.Text.RegularExpressions;
-using Jurassic.Library;
-using System.Threading;
-using System.Media;
 
 namespace BFKKuTuClient
 {
@@ -58,6 +57,7 @@ namespace BFKKuTuClient
         public int[] EXP = new int[361];
         public int MAX_LEVEL = 360;
         CreateRoomDialog CreateRoomDialogForm = new CreateRoomDialog(new string[] { }, new JObject(), new JObject(), new JObject(), new ClientData());
+        GameResultDialog GameResultDialogForm = new GameResultDialog(new JObject(), "", 0);
         Login LoginForm = new Login();
         Prompt PromptForm = new Prompt("");
         public Jurassic.ScriptEngine engine = new Jurassic.ScriptEngine();
@@ -100,6 +100,7 @@ namespace BFKKuTuClient
         public SoundPlayer timeoutSound = new SoundPlayer(Path.Combine(Directory.GetCurrentDirectory(), @"resources\sound\timeout.wav"));
         public string nowTurnSpeed;
         public int nowTurnTime;
+        public int nowRoundTime;
         public string[] BEAT = new string[] { null, "10000000", "10001000", "10010010", "10011010", "11011010", "11011110", "11011111", "11111111" };
         public Thread turnTimer = new Thread(() => { });
         public Thread roundTimer = new Thread(() => { });
@@ -182,7 +183,14 @@ namespace BFKKuTuClient
             }
             EXP[MAX_LEVEL - 1] = int.MaxValue;
             EXP[MAX_LEVEL] = int.MaxValue;
-            Const = JObject.Parse(get("https://bfkkutu.kr/client/loadgame"));
+            string constRes = get("https://bfkkutu.kr/client/loadgame");
+            if(constRes == "")
+            {
+                MessageBox.Show("BF끄투 서버가 점검 중이거나 서버에 문제가 발생했습니다.\n프로그램을 종료합니다.");
+                Close();
+                return;
+            }
+            Const = JObject.Parse(constRes);
             Lang = JObject.Parse(Const["lang"].ToString());
             Const.Remove("lang");
             MODE = Const["MODE"].ToObject<string[]>();
@@ -205,7 +213,7 @@ namespace BFKKuTuClient
                 i.BackColor = Color.Transparent;
             }
 
-            dynamic[] gameBoxChildren = new dynamic[] { givenCharLabel, startingWordLabel, gamingUsersBox, turnTimeProgressBar, turnTimeProgressBarLabel };
+            dynamic[] gameBoxChildren = new dynamic[] { givenCharLabel, startingWordLabel, gamingUsersBox, turnTimeProgressBar, turnTimeProgressBarLabel, roundTimeProgressBar, roundTimeProgressBarLabel };
             dynamic gameBoxParent = gameBox;
             foreach (var i in roomBoxChildren)
             {
@@ -333,15 +341,21 @@ namespace BFKKuTuClient
         }
 
         private dynamic get(string url) {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            request.Method = "GET";
+            try {
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                request.Method = "GET";
 
-            var webResponse = request.GetResponse();
-            var webStream = webResponse.GetResponseStream();
-            var responseReader = new StreamReader(webStream);
-            var response = responseReader.ReadToEnd();
-            responseReader.Close();
-            return response;
+                var webResponse = request.GetResponse();
+                var webStream = webResponse.GetResponseStream();
+                var responseReader = new StreamReader(webStream);
+                var response = responseReader.ReadToEnd();
+                responseReader.Close();
+                return response;
+            } catch 
+            {
+                MessageBox.Show("서버가 응답하지 않습니다.");
+                return "";
+            }
         }
 
         private void send(string type, dynamic obj = null)
@@ -485,10 +499,10 @@ namespace BFKKuTuClient
                     updateUI();
                     break;
                 case "preRoom":
-                    connectToRoom(Int16.Parse(res["id"].ToString()));
+                    connectToRoom(int.Parse(res["id"].ToString()));
                     break;
                 case "room":
-                    if (joinedRoom == Int16.Parse(res["room"]["id"].ToString()))
+                    if (joinedRoom == int.Parse(res["room"]["id"].ToString()))
                     {
                         SetText(roomTitleLabel, "[" + res["room"]["id"].ToString() + "] " + res["room"]["title"].ToString());
                         data.rooms[res["room"]["id"].ToString()] = res["room"];
@@ -513,6 +527,8 @@ namespace BFKKuTuClient
                     if (joinedRoom != 0) updateRoom();
                     break;
                 case "starting":
+                    AppendLabel(gameBox, roomInfoLabel);
+                    AppendLabel(gameBox, roomTitleLabel);
                     data.gaming = true;
                     setupMenuButtons();
                     lobbyBGM.Stop();
@@ -567,28 +583,42 @@ namespace BFKKuTuClient
                 case "turnStart":
                     SetLocation(turnTimeProgressBarLabel, new Point(958, 115));
                     nowTurnSpeed = res["speed"].ToString();
-                    nowTurnTime = Int16.Parse(res["turnTime"].ToString());
-                    SetProgressBarMaximum(turnTimeProgressBar, nowTurnTime/10);
+                    nowTurnTime = int.Parse(res["turnTime"].ToString());
+                    nowRoundTime = int.Parse(res["roundTime"].ToString());
+                    SetProgressBarMaximum(turnTimeProgressBar, nowTurnTime / 10);
+                    SetProgressBarMaximum(roundTimeProgressBar, nowRoundTime / 10);
                     turnTimer = new Thread(() =>
                     {
                         for (int i = 0; i <= nowTurnTime / 10; i++)
                         {
-                            SetProgressBarValue(turnTimeProgressBar, nowTurnTime/10 - i);
-                            if(i % (5/4) == 1/4) move(turnTimeProgressBarLabel, -1);
-                            SetText(turnTimeProgressBarLabel, nowTurnTime - i*10+"ms");
+                            SetProgressBarValue(turnTimeProgressBar, nowTurnTime / 10 - i);
+                            if(i % (5 / 4) == 1 / 4) move(turnTimeProgressBarLabel, -1);
+                            SetText(turnTimeProgressBarLabel, nowTurnTime - i * 10+"ms");
+                            Thread.Sleep(10);
+                        }
+                    });
+                    roundTimer = new Thread(() =>
+                    {
+                        for (int i = 0; i <= nowRoundTime / 10; i++)
+                        {
+                            SetProgressBarValue(roundTimeProgressBar, nowRoundTime / 10 - i);
+                            if (i % 3 == 1) move(roundTimeProgressBarLabel, -1);
+                            SetText(roundTimeProgressBarLabel, nowRoundTime - i * 10 + "ms");
                             Thread.Sleep(10);
                         }
                     });
                     turnTimer.Start();
+                    roundTimer.Start();
                     roundStart.Stop();
-                    gameSound_T[Int16.Parse(nowTurnSpeed)].Play();
-                    gamingUsersBox.Controls["gamingUserPanel" + data.rooms[joinedRoom.ToString()]["game"]["seq"][Int32.Parse(res["turn"].ToString())].ToString()].BackColor = Color.LightGreen;
+                    gameSound_T[int.Parse(nowTurnSpeed)].Play();
+                    gamingUsersBox.Controls["gamingUserPanel" + data.rooms[joinedRoom.ToString()]["game"]["seq"][int.Parse(res["turn"].ToString())].ToString()].BackColor = Color.LightGreen;
                     SetText(givenCharLabel, res["subChar"] == null ? res["char"].ToString() : res["char"].ToString() + "(" + res["subChar"].ToString() + ")");
                     isRelay = data.rooms[joinedRoom.ToString()]["game"]["seq"][int.Parse(res["turn"].ToString())].ToString() == data.id;
                     break;
                 case "turnEnd":
                     turnTimer.Abort();
-                    gameSound_T[Int16.Parse(nowTurnSpeed)].Stop();
+                    roundTimer.Abort();
+                    gameSound_T[int.Parse(nowTurnSpeed)].Stop();
                     if(res["ok"].ToString() == "False")
                     {
                         failAlert.Abort();
@@ -606,10 +636,11 @@ namespace BFKKuTuClient
                         return;
                     }
                     gameTurn++;
+                    SetText(chainLabel, gameTurn.ToString());
                     foreach (Control i in chainWordsBox.Controls)
                     {
                         Panel panel = i as Panel;
-                        if (gameTurn - Int16.Parse(panel.Name.Substring(11)) > 5)
+                        if (gameTurn - int.Parse(panel.Name.Substring(11)) > 5)
                         {
                             Delete(panel);
                         }
@@ -622,7 +653,7 @@ namespace BFKKuTuClient
                     Panel chainPanel = new Panel();
                     Label chainWord = new Label();
                     string beat = res["value"].ToString().Length <= 8 ? BEAT[res["value"].ToString().Length] : res["value"].ToString();
-                    int asIndex = res["value"].ToString().Length <= 8 ? Int16.Parse(nowTurnSpeed) : 11;
+                    int asIndex = res["value"].ToString().Length <= 8 ? int.Parse(nowTurnSpeed) : 11;
                     chainPanel.Name = "chainPanel_" + gameTurn;
                     chainPanel.Location = new Point(0, 0);
                     chainPanel.Size = new Size(190, 50);
@@ -644,12 +675,12 @@ namespace BFKKuTuClient
                                 Thread.Sleep(nowTurnTime / (beat.Length * 12));
                                 //gameSound_As[asIndex].Stop();
                             }
-                            gameSound_K[Int16.Parse(nowTurnSpeed)].Play();
+                            gameSound_K[int.Parse(nowTurnSpeed)].Play();
                         }).Start();
                     }
                     AppendPanel(chainWordsBox, chainPanel);
                     SetText(givenCharLabel, res["value"].ToString());
-                    SetText(scoreLabel_, (Int16.Parse(scoreLabel_.Text) + Int16.Parse(res["score"].ToString())).ToString().PadLeft(5, '0'));
+                    SetText(scoreLabel_, (int.Parse(scoreLabel_.Text) + int.Parse(res["score"].ToString())).ToString().PadLeft(5, '0'));
                     isRelay = false;
                     gamingUsersBox.Controls["gamingUserPanel" + res["profile"]["id"].ToString()].BackColor = Color.Transparent;
                     break;
@@ -657,14 +688,24 @@ namespace BFKKuTuClient
                     failSound.Play();
                     failAlert.Abort();
                     givenCharLabel.ForeColor = Color.Red;
+                    SetText(givenCharLabel, "" + res["value"].ToString());
                     failAlert = new Thread(() =>
                     {
                         Thread.Sleep(1000);
                         failSound.Stop();
                         givenCharLabel.ForeColor = Color.Black;
-                        SetText(givenCharLabel, "" + res["value"].ToString());
+                        SetText(givenCharLabel, "" + res["value"].ToString().ToArray()[0]);
                     });
                     failAlert.Start();
+                    break;
+                case "roundEnd":
+                    turnTimer.Abort();
+                    roundTimer.Abort();
+                    // 결과창 띄우기
+                    GameResultDialogForm.Close();
+                    GameResultDialogForm = new GameResultDialog(res, data.id, getLevel(int.Parse(res["users"][data.id]["data"]["score"].ToString())));
+                    GameResultDialogForm.Owner = this;
+                    GameResultDialogForm.Show();
                     break;
                 case "roomStuck":
                     MessageBox.Show("roomStuck");
@@ -753,7 +794,7 @@ namespace BFKKuTuClient
                     opts[opts.GetUpperBound(0)] = Lang[i.Name].ToString();
                 }
             }
-            SetText(roomInfoLabel, Lang["mode"+MODE[Int16.Parse(room["mode"].ToString())]].ToString() + " / " + string.Join(" / ", opts) +"  참여자 "+room["players"].ToObject<string[]>().Length+" / "+room["limit"].ToString()+"  라운드 "+room["round"].ToString()+"  "+room["time"].ToString()+"초");
+            SetText(roomInfoLabel, Lang["mode"+MODE[int.Parse(room["mode"].ToString())]].ToString() + " / " + string.Join(" / ", opts) +"  참여자 "+room["players"].ToObject<string[]>().Length+" / "+room["limit"].ToString()+"  라운드 "+room["round"].ToString()+"  "+room["time"].ToString()+"초");
             foreach (JToken i in room["players"]) {
                 JToken user = data.users[i.ToString()];
                 Panel panel = new Panel();
@@ -790,24 +831,24 @@ namespace BFKKuTuClient
         private void updateMe() {
             JToken me = data.users[data.id];
             int globalWin = 0;
-            int rankPoint = Int16.Parse(me["data"]["rankPoint"].ToString());
-            int level = getLevel(Int32.Parse(me["data"]["score"].ToString()));
+            int rankPoint = int.Parse(me["data"]["rankPoint"].ToString());
+            int level = getLevel(int.Parse(me["data"]["score"].ToString()));
             string rank = rankPoint < 5000 ? getRank(rankPoint) : getRankerRank(rankPoint, data.id);
 
             foreach (JProperty i in me["data"]["record"])
             {
-                globalWin += Int16.Parse(i.Value[1].ToString());
+                globalWin += int.Parse(i.Value[1].ToString());
             }
             SetText(myNicknameLabel, data.nickname);
             SetText(myLevelLabel, "레벨 " + level.ToString());
             myLevelImage.ImageLocation = @"resources\kkutu\lv\lv" + level.ToString("D4") + ".png";
             SetText(myGlobalWinLabel, "통산 " + globalWin + "승");
-            SetText(myPingLabel, Int16.Parse(me["money"].ToString()).ToString("N0") + "핑");
-            SetText(myRankLabel, rank + "  " + Int16.Parse(me["data"]["rankPoint"].ToString()).ToString("N0") + "점");
-            SetText(myLevelProgressLabel, Int32.Parse(me["data"]["score"].ToString()).ToString("N0") + " / " + Int32.Parse(EXP[level - 1].ToString()).ToString("N0") + "점");
+            SetText(myPingLabel, int.Parse(me["money"].ToString()).ToString("N0") + "핑");
+            SetText(myRankLabel, rank + "  " + int.Parse(me["data"]["rankPoint"].ToString()).ToString("N0") + "점");
+            SetText(myLevelProgressLabel, int.Parse(me["data"]["score"].ToString()).ToString("N0") + " / " + int.Parse(EXP[level - 1].ToString()).ToString("N0") + "점");
             SetText(myOkgLabel, prettyTime(double.Parse(data._playTime)));
             SetProgressBarValue(myLevelProgressBar, engine.CallGlobalFunction<int>("calcProgress", new object[] { me.ToString() }));
-            SetProgressBarValue(myOkgProgressBar, Int32.Parse(data._playTime) % 600000 / 6000);
+            SetProgressBarValue(myOkgProgressBar, int.Parse(data._playTime) % 600000 / 6000);
         }
 
         private string getRank(int rankPoint) {
@@ -1000,7 +1041,7 @@ namespace BFKKuTuClient
         }
 
         public void connectToRoomThroughList(KeyValuePair<string, JToken> roomData) {
-            connectToRoom(Int16.Parse(roomData.Key));
+            connectToRoom(int.Parse(roomData.Key));
 
             JObject json = new JObject();
             json["id"] = roomData.Key;
@@ -1159,7 +1200,7 @@ namespace BFKKuTuClient
             if (progressbar.InvokeRequired)
             {
                 SetProgressBarMaximumCallBack d = new SetProgressBarMaximumCallBack(SetProgressBarMaximum);
-                this.Invoke(d, new object[] { progressbar, maximum });
+                Invoke(d, new object[] { progressbar, maximum });
             }
             else
             {
@@ -1172,7 +1213,7 @@ namespace BFKKuTuClient
             if (element.InvokeRequired)
             {
                 DeleteCallBack d = new DeleteCallBack(Delete);
-                this.Invoke(d, new object[] { element });
+                Invoke(d, new object[] { element });
             }
             else
             {
@@ -1185,7 +1226,7 @@ namespace BFKKuTuClient
             if (element.InvokeRequired)
             {
                 MoveCallBack d = new MoveCallBack(move);
-                this.Invoke(d, new object[] { element, x, y });
+                Invoke(d, new object[] { element, x, y });
             }
             else
             {
@@ -1198,7 +1239,7 @@ namespace BFKKuTuClient
             if (label.InvokeRequired)
             {
                 SetTextCallback d = new SetTextCallback(SetText);
-                this.Invoke(d, new object[] { label, text });
+                Invoke(d, new object[] { label, text });
             }
             else
             {
@@ -1211,7 +1252,7 @@ namespace BFKKuTuClient
             if (element.InvokeRequired)
             {
                 SetLocationCallback d = new SetLocationCallback(SetLocation);
-                this.Invoke(d, new object[] { element, location });
+                Invoke(d, new object[] { element, location });
             }
             else
             {
@@ -1224,7 +1265,7 @@ namespace BFKKuTuClient
             if (target.InvokeRequired)
             {
                 AppendPanelCallback d = new AppendPanelCallback(AppendPanel);
-                this.Invoke(d, new object[] { target, element });
+                Invoke(d, new object[] { target, element });
             }
             else
             {
@@ -1237,7 +1278,7 @@ namespace BFKKuTuClient
             if (panel.InvokeRequired)
             {
                 AppendLabelCallback d = new AppendLabelCallback(AppendLabel);
-                this.Invoke(d, new object[] { panel, label });
+                Invoke(d, new object[] { panel, label });
             }
             else
             {
@@ -1249,7 +1290,7 @@ namespace BFKKuTuClient
             if (target.InvokeRequired)
             {
                 AppendDynamicCallback d = new AppendDynamicCallback(AppendDynamic);
-                this.Invoke(d, new object[] { target, element });
+                Invoke(d, new object[] { target, element });
             }
             else
             {
@@ -1261,7 +1302,7 @@ namespace BFKKuTuClient
             if (progressbar.InvokeRequired)
             {
                 SetProgressBarValueCallback d = new SetProgressBarValueCallback(SetProgressBarValue);
-                this.Invoke(d, new object[] { progressbar, value });
+                Invoke(d, new object[] { progressbar, value });
             }
             else
             {
@@ -1273,7 +1314,7 @@ namespace BFKKuTuClient
             if (element.InvokeRequired)
             {
                 DynamicShowCallback d = new DynamicShowCallback(Show);
-                this.Invoke(d, new object[] { element });
+                Invoke(d, new object[] { element });
             }
             else
             {
@@ -1286,7 +1327,7 @@ namespace BFKKuTuClient
             if (element.InvokeRequired)
             {
                 DynamicHideCallback d = new DynamicHideCallback(Hide);
-                this.Invoke(d, new object[] { element });
+                Invoke(d, new object[] { element });
             }
             else
             {
@@ -1299,7 +1340,7 @@ namespace BFKKuTuClient
             if (panel.InvokeRequired)
             {
                 ClearPanelCallback d = new ClearPanelCallback(Clear);
-                this.Invoke(d, new object[] { panel });
+                Invoke(d, new object[] { panel });
             }
             else
             {
@@ -1312,7 +1353,7 @@ namespace BFKKuTuClient
             if (target.InvokeRequired)
             {
                 AddControlCallback d = new AddControlCallback(AddControl);
-                this.Invoke(d, new object[] { target, element });
+                Invoke(d, new object[] { target, element });
             }
             else
             {
@@ -1367,8 +1408,8 @@ namespace BFKKuTuClient
             if (string.IsNullOrEmpty(base.Text))
             {
                 base.Text = PlaceHolderText;
-                this.ForeColor = Color.Gray;
-                this.Font = new Font(this.Font, FontStyle.Italic);
+                ForeColor = Color.Gray;
+                Font = new Font(Font, FontStyle.Italic);
                 isPlaceHolder = true;
             }
         }
@@ -1380,8 +1421,8 @@ namespace BFKKuTuClient
             if (isPlaceHolder)
             {
                 base.Text = "";
-                this.ForeColor = System.Drawing.SystemColors.WindowText;
-                this.Font = new Font(this.Font, FontStyle.Regular);
+                ForeColor = SystemColors.WindowText;
+                Font = new Font(Font, FontStyle.Regular);
                 isPlaceHolder = false;
             }
         }

@@ -22,7 +22,7 @@ namespace BFKKuTuClient
 
         private void loginBtn_Click(object sender, EventArgs e)
         {
-            String url = "https://bfkkutu.kr/login/local?id=" + id.Text + "&pw=" + pw.Text;
+            string url = "https://bfkkutu.kr/login/local?id=" + id.Text + "&pw=" + pw.Text;
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "GET";
 

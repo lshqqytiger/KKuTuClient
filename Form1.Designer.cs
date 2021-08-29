@@ -66,6 +66,9 @@ namespace BFKKuTuClient
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.chatBox = new System.Windows.Forms.Panel();
             this.gameBox = new System.Windows.Forms.Panel();
+            this.chainLabel = new System.Windows.Forms.Label();
+            this.roundTimeProgressBarLabel = new System.Windows.Forms.Label();
+            this.roundTimeProgressBar = new System.Windows.Forms.ProgressBar();
             this.turnTimeProgressBarLabel = new System.Windows.Forms.Label();
             this.turnTimeProgressBar = new System.Windows.Forms.ProgressBar();
             this.chainWordsBox = new System.Windows.Forms.Panel();
@@ -414,6 +417,9 @@ namespace BFKKuTuClient
             // 
             // gameBox
             // 
+            this.gameBox.Controls.Add(this.chainLabel);
+            this.gameBox.Controls.Add(this.roundTimeProgressBarLabel);
+            this.gameBox.Controls.Add(this.roundTimeProgressBar);
             this.gameBox.Controls.Add(this.turnTimeProgressBarLabel);
             this.gameBox.Controls.Add(this.turnTimeProgressBar);
             this.gameBox.Controls.Add(this.chainWordsBox);
@@ -425,10 +431,35 @@ namespace BFKKuTuClient
             this.gameBox.Size = new System.Drawing.Size(1015, 395);
             this.gameBox.TabIndex = 19;
             // 
+            // chainLabel
+            // 
+            this.chainLabel.AutoSize = true;
+            this.chainLabel.Font = new System.Drawing.Font("맑은 고딕", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            this.chainLabel.Location = new System.Drawing.Point(871, 44);
+            this.chainLabel.Name = "chainLabel";
+            this.chainLabel.Size = new System.Drawing.Size(0, 25);
+            this.chainLabel.TabIndex = 8;
+            // 
+            // roundTimeProgressBarLabel
+            // 
+            this.roundTimeProgressBarLabel.AutoSize = true;
+            this.roundTimeProgressBarLabel.Location = new System.Drawing.Point(958, 147);
+            this.roundTimeProgressBarLabel.Name = "roundTimeProgressBarLabel";
+            this.roundTimeProgressBarLabel.Size = new System.Drawing.Size(71, 15);
+            this.roundTimeProgressBarLabel.TabIndex = 7;
+            this.roundTimeProgressBarLabel.Text = "라운드 시간";
+            // 
+            // roundTimeProgressBar
+            // 
+            this.roundTimeProgressBar.Location = new System.Drawing.Point(19, 139);
+            this.roundTimeProgressBar.Name = "roundTimeProgressBar";
+            this.roundTimeProgressBar.Size = new System.Drawing.Size(978, 23);
+            this.roundTimeProgressBar.TabIndex = 6;
+            // 
             // turnTimeProgressBarLabel
             // 
             this.turnTimeProgressBarLabel.AutoSize = true;
-            this.turnTimeProgressBarLabel.Location = new System.Drawing.Point(958, 115);
+            this.turnTimeProgressBarLabel.Location = new System.Drawing.Point(958, 124);
             this.turnTimeProgressBarLabel.Name = "turnTimeProgressBarLabel";
             this.turnTimeProgressBarLabel.Size = new System.Drawing.Size(47, 15);
             this.turnTimeProgressBarLabel.TabIndex = 5;
@@ -436,21 +467,21 @@ namespace BFKKuTuClient
             // 
             // turnTimeProgressBar
             // 
-            this.turnTimeProgressBar.Location = new System.Drawing.Point(19, 107);
+            this.turnTimeProgressBar.Location = new System.Drawing.Point(19, 116);
             this.turnTimeProgressBar.Name = "turnTimeProgressBar";
             this.turnTimeProgressBar.Size = new System.Drawing.Size(978, 23);
             this.turnTimeProgressBar.TabIndex = 4;
             // 
             // chainWordsBox
             // 
-            this.chainWordsBox.Location = new System.Drawing.Point(19, 136);
+            this.chainWordsBox.Location = new System.Drawing.Point(19, 168);
             this.chainWordsBox.Name = "chainWordsBox";
             this.chainWordsBox.Size = new System.Drawing.Size(978, 50);
             this.chainWordsBox.TabIndex = 3;
             // 
             // gamingUsersBox
             // 
-            this.gamingUsersBox.Location = new System.Drawing.Point(19, 215);
+            this.gamingUsersBox.Location = new System.Drawing.Point(19, 224);
             this.gamingUsersBox.Name = "gamingUsersBox";
             this.gamingUsersBox.Size = new System.Drawing.Size(978, 163);
             this.gamingUsersBox.TabIndex = 2;
@@ -458,21 +489,19 @@ namespace BFKKuTuClient
             // startingWordLabel
             // 
             this.startingWordLabel.Font = new System.Drawing.Font("맑은 고딕", 15F);
-            this.startingWordLabel.Location = new System.Drawing.Point(0, 26);
+            this.startingWordLabel.Location = new System.Drawing.Point(0, 37);
             this.startingWordLabel.Name = "startingWordLabel";
             this.startingWordLabel.Size = new System.Drawing.Size(1015, 34);
             this.startingWordLabel.TabIndex = 1;
-            this.startingWordLabel.Text = "게임 시작 단어";
             this.startingWordLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // givenCharLabel
             // 
             this.givenCharLabel.Font = new System.Drawing.Font("맑은 고딕", 20F);
-            this.givenCharLabel.Location = new System.Drawing.Point(0, 60);
+            this.givenCharLabel.Location = new System.Drawing.Point(0, 71);
             this.givenCharLabel.Name = "givenCharLabel";
             this.givenCharLabel.Size = new System.Drawing.Size(1015, 37);
             this.givenCharLabel.TabIndex = 0;
-            this.givenCharLabel.Text = "주어진 글자";
             this.givenCharLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // Form1
@@ -569,6 +598,9 @@ namespace BFKKuTuClient
         private System.Windows.Forms.Panel chainWordsBox;
         private System.Windows.Forms.ProgressBar turnTimeProgressBar;
         private System.Windows.Forms.Label turnTimeProgressBarLabel;
+        private System.Windows.Forms.Label roundTimeProgressBarLabel;
+        private System.Windows.Forms.ProgressBar roundTimeProgressBar;
+        private System.Windows.Forms.Label chainLabel;
     }
 }
 

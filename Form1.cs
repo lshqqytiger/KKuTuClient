@@ -58,6 +58,14 @@ namespace BFKKuTuClient
         public int MAX_LEVEL = 360;
         CreateRoomDialog CreateRoomDialogForm = new CreateRoomDialog(new string[] { }, new JObject(), new JObject(), new JObject(), new ClientData());
         GameResultDialog GameResultDialogForm = new GameResultDialog(new JObject(), "", 0);
+        SettingsDialog SettingsDialogForm = new SettingsDialog();
+        FriendListDialog FriendListDialogForm = new FriendListDialog();
+        InquireDialog InquireDialogForm = new InquireDialog();
+        RankingDialog RankingDialogForm = new RankingDialog();
+        QuickDialog QuickDialogForm = new QuickDialog();
+        DictionaryDialog DictionaryDialogForm = new DictionaryDialog();
+        ReplayDialog ReplayDialogForm = new ReplayDialog();
+        ClanDialog ClanDialogForm = new ClanDialog();
         Login LoginForm = new Login();
         Prompt PromptForm = new Prompt("");
         public Jurassic.ScriptEngine engine = new Jurassic.ScriptEngine();
@@ -102,8 +110,10 @@ namespace BFKKuTuClient
         public int nowTurnTime;
         public int nowRoundTime;
         public string[] BEAT = new string[] { null, "10000000", "10001000", "10010010", "10011010", "11011010", "11011110", "11011111", "11111111" };
-        public Thread turnTimer = new Thread(() => { });
-        public Thread roundTimer = new Thread(() => { });
+        /*public Thread turnTimer = new Thread(() => { });
+        public Thread roundTimer = new Thread(() => { });*/
+        public System.Windows.Forms.Timer turnTimer = new System.Windows.Forms.Timer();
+        public System.Windows.Forms.Timer roundTimer = new System.Windows.Forms.Timer();
 
         private enum SSLProtocolHack
         {
@@ -116,36 +126,41 @@ namespace BFKKuTuClient
         {
             InitializeComponent();
 
-            Login.LoginGetEvent += new LoginGetEventHandler(this.loginProcess);
-            Prompt.PromptGetEvent += new PromptGetEventHandler(this.promptConfirmed);
-            CreateRoomDialog.CreateRoomEvent += new CreateRoomEventHandler(this.createRoomHandler);
+            Login.LoginGetEvent += new LoginGetEventHandler(loginProcess);
+            Prompt.PromptGetEvent += new PromptGetEventHandler(promptConfirmed);
+            CreateRoomDialog.CreateRoomEvent += new CreateRoomEventHandler(createRoomHandler);
 
             chatBox.AutoScroll = false;
             chatBox.HorizontalScroll.Enabled = false;
             chatBox.HorizontalScroll.Visible = false;
             chatBox.HorizontalScroll.Maximum = 0;
             chatBox.AutoScroll = true;
-            chatBox.BackgroundImage = Image.FromFile(@"resources\ui\558_225.png");
+            chatBox.BackgroundImage = Image.FromFile(@"resources\ui\1015_225.png");
 
             userListBox.AutoScroll = false;
             userListBox.HorizontalScroll.Enabled = false;
             userListBox.HorizontalScroll.Visible = false;
             userListBox.HorizontalScroll.Maximum = 0;
             userListBox.AutoScroll = true;
-            userListBox.BackgroundImage = Image.FromFile(@"resources\ui\227_360.png");
+            userListBox.BackgroundImage = Image.FromFile(@"resources\ui\261_395.png");
 
             roomListBox.Parent = this;
-            roomListBox.BackgroundImage = Image.FromFile(@"resources\ui\558_360.png");
+            roomListBox.BackgroundImage = Image.FromFile(@"resources\ui\1015_395.png");
             roomUsersBox.Parent = roomBox;
             roomBox.Parent = this;
-            roomBox.BackgroundImage = Image.FromFile(@"resources\ui\571_360.png");
+            roomBox.BackgroundImage = Image.FromFile(@"resources\ui\1015_395.png");
             roomBox.Visible = false;
             gameBox.Parent = this;
-            gameBox.BackgroundImage = Image.FromFile(@"resources\ui\571_360.png");
+            gameBox.BackgroundImage = Image.FromFile(@"resources\ui\1015_395.png");
             gameBox.Visible = false;
 
-            moremiBox.BackgroundImage = Image.FromFile(@"resources\ui\227_274.png");
+            moremiBox.BackgroundImage = Image.FromFile(@"resources\ui\261_274.png");
             myMoremiPictureBox.BackgroundImage = Image.FromFile(@"resources\ui\120_120.png");
+
+            roomTeamBox.BackgroundImage = Image.FromFile(@"resources\ui\54_334.png");
+            roomUsersBox.BackgroundImage = Image.FromFile(@"resources\ui\720_334.png");
+            gamingUsersBox.BackgroundImage = Image.FromFile(@"resources\ui\978_163.png");
+            chainWordsBox.BackgroundImage = Image.FromFile(@"resources\ui\978_50.png");
 
             engine.Evaluate(@"function getRequiredScore(lv){
                 return Math.round(
@@ -222,8 +237,10 @@ namespace BFKKuTuClient
                 i.BackColor = Color.Transparent;
             }
 
+            List<string> alreadyRegistered = new List<string>();
             foreach (ImprovedButton i in menuButtonsForLobby)
             {
+                alreadyRegistered.Add(i.id);
                 i.Click += (se, ev) =>
                 {
                     menuButtonClicked(i.id);
@@ -231,6 +248,8 @@ namespace BFKKuTuClient
             }
             foreach (ImprovedButton i in menuButtonsForMaster)
             {
+                if (alreadyRegistered.IndexOf(i.id) != -1) continue;
+                alreadyRegistered.Add(i.id);
                 i.Click += (se, ev) =>
                 {
                     menuButtonClicked(i.id);
@@ -238,6 +257,8 @@ namespace BFKKuTuClient
             }
             foreach (ImprovedButton i in menuButtonsForGaming)
             {
+                if (alreadyRegistered.IndexOf(i.id) != -1) continue;
+                alreadyRegistered.Add(i.id);
                 i.Click += (se, ev) =>
                 {
                     menuButtonClicked(i.id);
@@ -245,6 +266,8 @@ namespace BFKKuTuClient
             }
             foreach (ImprovedButton i in menuButtonsForNormal)
             {
+                if (alreadyRegistered.IndexOf(i.id) != -1) continue;
+                alreadyRegistered.Add(i.id);
                 i.Click += (se, ev) =>
                 {
                     menuButtonClicked(i.id);
@@ -282,11 +305,65 @@ namespace BFKKuTuClient
         private void menuButtonClicked(string type) {
             switch (type)
             {
+                case "help":
+                    MessageBox.Show("도움말 기능은 준비 중입니다.");
+                    break;
+                case "settings":
+                    SettingsDialogForm.Close();
+                    SettingsDialogForm = new SettingsDialog();
+                    SettingsDialogForm.Owner = this;
+                    SettingsDialogForm.Show();
+                    break;
+                case "friends":
+                    FriendListDialogForm.Close();
+                    FriendListDialogForm = new FriendListDialog();
+                    FriendListDialogForm.Owner = this;
+                    FriendListDialogForm.Show();
+                    break;
+                case "inquire":
+                    InquireDialogForm.Close();
+                    InquireDialogForm = new InquireDialog();
+                    InquireDialogForm.Owner = this;
+                    InquireDialogForm.Show();
+                    break;
+                case "ranking":
+                    RankingDialogForm.Close();
+                    RankingDialogForm = new RankingDialog();
+                    RankingDialogForm.Owner = this;
+                    RankingDialogForm.Show();
+                    break;
                 case "newRoom":
                     CreateRoomDialogForm.Close();
                     CreateRoomDialogForm = new CreateRoomDialog(MODE, JObject.Parse(Const["RULE"].ToString()), JObject.Parse(Const["OPTIONS"].ToString()), Lang, data);
                     CreateRoomDialogForm.Owner = this;
                     CreateRoomDialogForm.Show();
+                    break;
+                case "quick":
+                    QuickDialogForm.Close();
+                    QuickDialogForm = new QuickDialog();
+                    QuickDialogForm.Owner = this;
+                    QuickDialogForm.Show();
+                    break;
+                case "shop":
+                    // 상점 구현
+                    break;
+                case "dictionary":
+                    DictionaryDialogForm.Close();
+                    DictionaryDialogForm = new DictionaryDialog();
+                    DictionaryDialogForm.Owner = this;
+                    DictionaryDialogForm.Show();
+                    break;
+                case "replay":
+                    ReplayDialogForm.Close();
+                    ReplayDialogForm = new ReplayDialog();
+                    ReplayDialogForm.Owner = this;
+                    ReplayDialogForm.Show();
+                    break;
+                case "clan":
+                    ClanDialogForm.Close();
+                    ClanDialogForm = new ClanDialog();
+                    ClanDialogForm.Owner = this;
+                    ClanDialogForm.Show();
                     break;
                 case "reload":
                     send("reloadData");
@@ -394,7 +471,7 @@ namespace BFKKuTuClient
                 }
                 else return;
             }
-            if (id == String.Empty || pw == String.Empty) {
+            if (id == string.Empty || pw == string.Empty) {
                 MessageBox.Show("로그인하지 않았습니다.");
                 return;
             }
@@ -578,35 +655,32 @@ namespace BFKKuTuClient
                         }
                     }
                     Clear(chainWordsBox);
-                    SetText(startingWordLabel, new string(data.rooms[joinedRoom.ToString()]["game"]["title"].ToString().ToCharArray().SelectMany(ch => new[] { ch, ' ' }).ToArray()));
+                    SetText(startingWordLabel, data.rooms[joinedRoom.ToString()]["round"].ToString() == "1" ? data.rooms[joinedRoom.ToString()]["game"]["title"].ToString()[0].ToString() : new string(data.rooms[joinedRoom.ToString()]["game"]["title"].ToString().ToCharArray().SelectMany(ch => new[] { ch, ' ' }).ToArray()));
                     break;
                 case "turnStart":
+                    int turnTimerTick = 0;
+                    int roundTimerTick = 0;
                     SetLocation(turnTimeProgressBarLabel, new Point(958, 115));
                     nowTurnSpeed = res["speed"].ToString();
                     nowTurnTime = int.Parse(res["turnTime"].ToString());
                     nowRoundTime = int.Parse(res["roundTime"].ToString());
                     SetProgressBarMaximum(turnTimeProgressBar, nowTurnTime / 10);
                     SetProgressBarMaximum(roundTimeProgressBar, nowRoundTime / 10);
-                    turnTimer = new Thread(() =>
+                    turnTimer.Interval = 10;
+                    turnTimer.Tick += (object sender, EventArgs e) =>
                     {
-                        for (int i = 0; i <= nowTurnTime / 10; i++)
-                        {
-                            SetProgressBarValue(turnTimeProgressBar, nowTurnTime / 10 - i);
-                            if(i % (5 / 4) == 1 / 4) move(turnTimeProgressBarLabel, -1);
-                            SetText(turnTimeProgressBarLabel, nowTurnTime - i * 10+"ms");
-                            Thread.Sleep(10);
-                        }
-                    });
-                    roundTimer = new Thread(() =>
+                        MessageBox.Show(turnTimerTick.ToString());
+                        turnTimerTick++;
+                        SetProgressBarValue(turnTimeProgressBar, nowTurnTime / 10 - turnTimerTick);
+                    };
+                    roundTimer.Interval = 10;
+                    roundTimer.Tick += (object sender, EventArgs e) =>
                     {
-                        for (int i = 0; i <= nowRoundTime / 10; i++)
-                        {
-                            SetProgressBarValue(roundTimeProgressBar, nowRoundTime / 10 - i);
-                            if (i % 3 == 1) move(roundTimeProgressBarLabel, -1);
-                            SetText(roundTimeProgressBarLabel, nowRoundTime - i * 10 + "ms");
-                            Thread.Sleep(10);
-                        }
-                    });
+                        roundTimerTick++;
+                        SetProgressBarValue(roundTimeProgressBar, nowRoundTime / 10 - roundTimerTick);
+                    };
+                    turnTimer.Enabled = true;
+                    roundTimer.Enabled = true;
                     turnTimer.Start();
                     roundTimer.Start();
                     roundStart.Stop();
@@ -616,8 +690,10 @@ namespace BFKKuTuClient
                     isRelay = data.rooms[joinedRoom.ToString()]["game"]["seq"][int.Parse(res["turn"].ToString())].ToString() == data.id;
                     break;
                 case "turnEnd":
-                    turnTimer.Abort();
-                    roundTimer.Abort();
+                    turnTimer.Enabled = false;
+                    roundTimer.Enabled = false;
+                    turnTimer.Stop();
+                    roundTimer.Stop();
                     gameSound_T[int.Parse(nowTurnSpeed)].Stop();
                     if(res["ok"].ToString() == "False")
                     {
@@ -698,14 +774,26 @@ namespace BFKKuTuClient
                     });
                     failAlert.Start();
                     break;
+                case "okg":
+                    data._okg = res["time"].ToString();
+                    break;
                 case "roundEnd":
-                    turnTimer.Abort();
-                    roundTimer.Abort();
+                    turnTimer.Enabled = false;
+                    roundTimer.Enabled = false;
+                    turnTimer.Stop();
+                    roundTimer.Stop();
                     // 결과창 띄우기
-                    GameResultDialogForm.Close();
-                    GameResultDialogForm = new GameResultDialog(res, data.id, getLevel(int.Parse(res["users"][data.id]["data"]["score"].ToString())));
-                    GameResultDialogForm.Owner = this;
-                    GameResultDialogForm.Show();
+                    BeginInvoke(new MethodInvoker(delegate {
+                        GameResultDialogForm.Close();
+                        GameResultDialogForm = new GameResultDialog(res, data.id, getLevel(int.Parse(res["users"][data.id]["data"]["score"].ToString())));
+                        GameResultDialogForm.Owner = this;
+                        GameResultDialogForm.Show();
+                    }));
+                    Hide(gameBox);
+                    Show(roomBox);
+                    data.gaming = false;
+                    lobbyBGM.Play();
+                    updateUI();
                     break;
                 case "roomStuck":
                     MessageBox.Show("roomStuck");
@@ -898,7 +986,7 @@ namespace BFKKuTuClient
             if (hour != 0) txt[0] = hour + "시";
             if (min != 0) txt[1] = min + "분";
             if (hour == 0) txt[2] = sec + "초";
-            return String.Join(" ", txt);
+            return string.Join(" ", txt);
         }
 
         private void updateUserList() {
@@ -983,12 +1071,12 @@ namespace BFKKuTuClient
             Graphics g = Graphics.FromImage(moremiBitmap);
             JObject LR = JObject.Parse("{ 'Mlhand': 'Mhand', 'Mrhand': 'Mhand' }");
 
-            Image body = Bitmap.FromFile(Path.Combine(path, @"resources\kkutu\moremi\body.png"));
+            Image body = Image.FromFile(Path.Combine(path, @"resources\kkutu\moremi\body.png"));
             g.DrawImage(body, 0, 0, moremiBitmap.Width, moremiBitmap.Height);
             foreach (string i in Const["MOREMI_PART"])
             {
                 string key = "M" + i;
-                Image img = Bitmap.FromFile(Path.Combine(path, iImage(equip[key] == null ? @"resources\kkutu\moremi\" + key + @"\def.png" : equip[key].ToString(), LR[key] == null ? key : LR[key].ToString())));
+                Image img = Image.FromFile(Path.Combine(path, iImage(equip[key] == null ? @"resources\kkutu\moremi\" + key + @"\def.png" : equip[key].ToString(), LR[key] == null ? key : LR[key].ToString())));
                 g.DrawImage(img, 0, 0, moremiBitmap.Width, moremiBitmap.Height);
             }
             return moremiBitmap;

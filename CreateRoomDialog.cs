@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using System.Windows.Forms;
 
@@ -63,11 +58,11 @@ namespace BFKKuTuClient
 
         private void confirmBtn_Click(object sender, EventArgs e)
         {
-            int playerLimit = Int32.Parse(playerLimitTextBox.Text);
-            int round = Int32.Parse(roundTextBox.Text);
+            int playerLimit = int.Parse(playerLimitTextBox.Text);
+            int round = int.Parse(roundTextBox.Text);
             JObject opts = JObject.Parse(@"{'injpick':[],'manner':false,'injeong':false,'mission':false,'proverb':false,'sami':false,'no2':false,'unlimited':false,'short':false,'randomturn':false,'unknownword':false,'returns':false,'abcmission':false,'ignoreinitial':false,'blockword':false,'eventmode':false,'moremission':false,'rankgame':false,'ogow':false,'selecttheme':false,'bantheme':false,'middletoss':false,'tournament':false,'twenty':false,'bandouble':false,'midmanner':false,'item':false,'joinwhilegaming':false}");
             Dictionary<string, string> roomData = new Dictionary<string, string>();
-            if (titleTextBox.Text == String.Empty) {
+            if (titleTextBox.Text == string.Empty) {
                 MessageBox.Show(Lang["error_431"].ToString());
                 return;
             };

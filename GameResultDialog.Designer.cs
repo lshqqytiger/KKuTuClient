@@ -44,18 +44,18 @@ namespace BFKKuTuClient
             // 
             // saveGameBtn
             // 
-            this.saveGameBtn.Location = new System.Drawing.Point(115, 420);
+            this.saveGameBtn.Location = new System.Drawing.Point(115, 428);
             this.saveGameBtn.Name = "saveGameBtn";
-            this.saveGameBtn.Size = new System.Drawing.Size(115, 40);
+            this.saveGameBtn.Size = new System.Drawing.Size(115, 32);
             this.saveGameBtn.TabIndex = 0;
             this.saveGameBtn.Text = "경기 저장";
             this.saveGameBtn.UseVisualStyleBackColor = true;
             // 
             // confirmBtn
             // 
-            this.confirmBtn.Location = new System.Drawing.Point(236, 420);
+            this.confirmBtn.Location = new System.Drawing.Point(236, 428);
             this.confirmBtn.Name = "confirmBtn";
-            this.confirmBtn.Size = new System.Drawing.Size(115, 40);
+            this.confirmBtn.Size = new System.Drawing.Size(115, 32);
             this.confirmBtn.TabIndex = 1;
             this.confirmBtn.Text = "확인";
             this.confirmBtn.UseVisualStyleBackColor = true;

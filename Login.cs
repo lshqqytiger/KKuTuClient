@@ -48,7 +48,7 @@ namespace BFKKuTuClient
                 pw.Enabled = false;
                 loginBtn.Enabled = false;
                 LoginGetEvent(id.Text, pw.Text, response.Split('|'));
-                this.Close();
+                Close();
             }
         }
     }

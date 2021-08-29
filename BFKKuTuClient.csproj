@@ -12,7 +12,8 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
-    <PublishUrl>게시\</PublishUrl>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -24,7 +25,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -76,11 +76,23 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClanDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ClanDialog.Designer.cs">
+      <DependentUpon>ClanDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="CreateRoomDialog.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="CreateRoomDialog.Designer.cs">
       <DependentUpon>CreateRoomDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DictionaryDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DictionaryDialog.Designer.cs">
+      <DependentUpon>DictionaryDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -88,11 +100,23 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="FriendListDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FriendListDialog.Designer.cs">
+      <DependentUpon>FriendListDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="GameResultDialog.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GameResultDialog.Designer.cs">
       <DependentUpon>GameResultDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InquireDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InquireDialog.Designer.cs">
+      <DependentUpon>InquireDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Login.cs">
       <SubType>Form</SubType>
@@ -108,14 +132,56 @@
       <DependentUpon>Prompt.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QuickDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="QuickDialog.Designer.cs">
+      <DependentUpon>QuickDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RankingDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RankingDialog.Designer.cs">
+      <DependentUpon>RankingDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ReplayDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ReplayDialog.Designer.cs">
+      <DependentUpon>ReplayDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SettingsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SettingsDialog.Designer.cs">
+      <DependentUpon>SettingsDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WordRequestDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WordRequestDialog.Designer.cs">
+      <DependentUpon>WordRequestDialog.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="ClanDialog.resx">
+      <DependentUpon>ClanDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="CreateRoomDialog.resx">
       <DependentUpon>CreateRoomDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DictionaryDialog.resx">
+      <DependentUpon>DictionaryDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FriendListDialog.resx">
+      <DependentUpon>FriendListDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GameResultDialog.resx">
       <DependentUpon>GameResultDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InquireDialog.resx">
+      <DependentUpon>InquireDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Login.resx">
       <DependentUpon>Login.cs</DependentUpon>
@@ -132,6 +198,21 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="QuickDialog.resx">
+      <DependentUpon>QuickDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RankingDialog.resx">
+      <DependentUpon>RankingDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ReplayDialog.resx">
+      <DependentUpon>ReplayDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SettingsDialog.resx">
+      <DependentUpon>SettingsDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WordRequestDialog.resx">
+      <DependentUpon>WordRequestDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
